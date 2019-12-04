@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E62F9E5D-F620-4723-8704-48CA34161506}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Singleton", "Singleton", "{92AA2951-09D4-47C4-88B5-1685A832D465}"
+	ProjectSection(SolutionItems) = preProject
+		src\Singleton\Singleton.cpp = src\Singleton\Singleton.cpp
+		src\Singleton\Singleton.h = src\Singleton\Singleton.h
+		src\Singleton\SingletonBase.h = src\Singleton\SingletonBase.h
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{92AA2951-09D4-47C4-88B5-1685A832D465} = {E62F9E5D-F620-4723-8704-48CA34161506}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5ED1E782-F67E-44E8-8FAD-810A49BB512B}
+	EndGlobalSection
+EndGlobal
