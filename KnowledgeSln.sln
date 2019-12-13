@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29609.76
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E62F9E5D-F620-4723-8704-48CA34161506}"
 EndProject
@@ -9,6 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Singleton", "Singleton", "{
 	ProjectSection(SolutionItems) = preProject
 		src\Singleton\Singleton.cpp = src\Singleton\Singleton.cpp
 		src\Singleton\Singleton.h = src\Singleton\Singleton.h
+		src\Singleton\singleton_base.h = src\Singleton\singleton_base.h
 		src\Singleton\SingletonBase.h = src\Singleton\SingletonBase.h
 	EndProjectSection
 EndProject
