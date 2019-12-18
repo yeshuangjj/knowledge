@@ -2,8 +2,8 @@
 #define HORSE_SINGLETON_BASE_HEADER
 #pragma once
 
-#define HORSE_SINGLETON_BASE_USE_BOOST
-#ifndef HORSE_SINGLETON_BASE_USE_BOOST
+//#define HORSE_SINGLETON_BASE_DISABLE_STD
+#ifndef HORSE_SINGLETON_BASE_DISABLE_STD
 #include <memory>
 #include <mutex>
 #include <assert.h>
@@ -19,8 +19,7 @@
 eg:
 	class Test :public singleton_base_thread_safe<Test>
 	{
-		friend class singleton_base_thread_safe<Test>;
-	private:
+	public:
 		Test() :age_(88) {}
 	public:
 		int age()const { return age_; }
@@ -47,15 +46,17 @@ eg:
 				(2)保存 instance() 返回的智能指针的副本，以确保 实际的对象不会因为 静态智能指针的释放而释放
 */
 
-#ifndef HORSE_SINGLETON_BASE_USE_BOOST
-template<typename T>
+#ifndef HORSE_SINGLETON_BASE_DISABLE_STD
+template<class T>
 class singleton_base_thread_safe
 {
+	friend T;
 private:
 	singleton_base_thread_safe(const singleton_base_thread_safe&) = delete;
 	singleton_base_thread_safe& operator=(const singleton_base_thread_safe&) = delete;
-public:
+private:
 	singleton_base_thread_safe() = default;
+public:
 	~singleton_base_thread_safe() = default;
 public:
 	static std::shared_ptr<T> instance()
@@ -80,8 +81,10 @@ private:
 template<typename T>
 class singleton_base_thread_unsafe
 {
-public:
+	friend T;
+private:
 	singleton_base_thread_unsafe() = default;
+public:
 	~singleton_base_thread_unsafe() = default;
 public:
 	static std::shared_ptr<T> instance()
@@ -96,8 +99,10 @@ public:
 template<typename T>
 class singleton_base_thread_safe : public boost::noncopyable
 {
-public:
+	friend T;
+private:
 	singleton_base_thread_safe() = default;
+public:
 	~singleton_base_thread_safe() = default;
 public:
 	static boost::shared_ptr<T> instance()
@@ -122,8 +127,10 @@ private:
 template<typename T>
 class singleton_base_thread_unsafe : public boost::noncopyable
 {
-public:
+	friend T;
+private:
 	singleton_base_thread_unsafe() = default;
+public:
 	~singleton_base_thread_unsafe() = default;
 public:
 	static boost::shared_ptr<T> instance()
@@ -141,11 +148,16 @@ note:when you use c++11 , lazy_singleton_base is thread-safe!
 template<typename T>
 class lazy_singleton_base
 {
+	friend T;
+private:
+	lazy_singleton_base() = default;
 public:
-	static T *instance()
+	~lazy_singleton_base() = default;
+public:
+	static T &instance()
 	{
 		static T obj;
-		return &obj;
+		return obj;
 	}
 
 	//static void destory()
