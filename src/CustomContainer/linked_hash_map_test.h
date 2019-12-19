@@ -105,7 +105,7 @@ namespace linked_hash_map_test
 			cout << __FUNCTION__ << "**********************************************************" << endl;
 			linked_hash_map<int, Student, true> linked;
 			typedef linked_hash_map<int, Student>::list_value_type list_value_type;
-			bool bExisted = false;
+			bool bExisted = true;
 			Student s1(1, 1, "a1");
 			Student s2(2, 2, "a2");
 			Student s3(3, 3, "a3");
@@ -128,9 +128,23 @@ namespace linked_hash_map_test
 			auto itr23 = linked.push_back(23, Student(23, 23, "a23"), bExisted);
 			auto itr24 = linked.push_back(24, Student(24, 24, "a24"), bExisted);
 
+			
+			itr24 = linked.push_back(24, Student(STUDENT_PARAMS(2444)), bExisted); //重复
+
+			//push_front
+			linked.push_front(std::make_pair(-1, Student(STUDENT_PARAMS(-1))));
+			linked.push_front(list_value_type(-2, Student(STUDENT_PARAMS(-2))));
+			linked.push_front(std::make_pair(-3, Student(STUDENT_PARAMS(-3))), bExisted);
+			linked.push_front(list_value_type(-4, Student(STUDENT_PARAMS(-4))), bExisted);
+
+			linked.push_front(-5, Student(STUDENT_PARAMS(-5)));
+			linked.push_front(-6, Student(STUDENT_PARAMS(-6)), bExisted);
+			linked.push_front(-6, Student(STUDENT_PARAMS(-66666666)), bExisted); //重复
+
 			//特殊测试			
 			//linked.erase(itr23);  修正：push_back不返回迭代器，返回的迭代器容易造成误用，最好还是和 标准库的行为一致
 			//linked.erase(23);
+			itr23 = linked.insert(itr23, 23, Student(STUDENT_PARAMS(2333333))); //重复
 
 			//insert itr
 			linked.insert(itr23, 33, Student(STUDENT_PARAMS(33)));
@@ -200,6 +214,18 @@ namespace linked_hash_map_test
 
 			cout << __FUNCTION__ << "**********************************************************" << endl;
 
+			//pop
+			
+			linked.pop_back();
+			linked.pop_back();
+			linked.pop_front();
+			linked.pop_front();
+
+			auto &elem_back = linked.back();
+			elem_back.second = Student(STUDENT_PARAMS(99999));
+			auto &elem_front = linked.front();
+			elem_front.second = Student(STUDENT_PARAMS(11111111));
+
 			for (auto rItr = linked.rbegin(); rItr != linked.rend(); ++rItr)
 			{
 				cout << rItr->second << endl;
@@ -222,7 +248,7 @@ namespace linked_hash_map_test
 	public:
 		static void test_all()
 		{
-			//test1();
+			test1();
 			//test2();
 			test3();
 		}

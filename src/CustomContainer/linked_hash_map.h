@@ -38,7 +38,7 @@ public:
 	typedef _Hasher hasher;
 	typedef _Keyeq key_equal;
 
-	typedef typename std::pair<const key_type, mapped_type> list_value_type; //list_的元素类型
+	typedef typename std::pair<const key_type, mapped_type> list_value_type; //list_的元素类型 （key_type是不允许改变的,必须使用const）
 	typedef typename std::list<list_value_type> list_type;
 	typedef typename list_type::size_type size_type;
 	typedef typename list_type::reference list_reference;
@@ -62,7 +62,12 @@ private:
 	typedef typename hash_map_type::iterator map_iterator;
 	typedef typename hash_map_type::const_iterator const_map_iterator;
 private:
-	/*core of algorithm*/
+	/**
+	* @brief:core of algorithm.
+	*        note,if bExisted is true, will cause "_Where" to be invalid
+	* @param:
+	* @return:
+	**/
 	list_iterator _Insert(const_list_iterator _Where, const list_value_type &val, bool bCover, bool &bExisted)
 	{
 		assert(_Where._Getcont() == &list_); //检查迭代器是否失效了,借鉴 list的insert,判断迭代器是否失效
@@ -75,9 +80,26 @@ private:
 			bExisted = true;
 			if (bCover)
 			{
-				list_.erase(mapItr->second);
+				//方案一：
+				//必须先调用list_.insert(_Where, val) ,然后再条用 list_.erase(mapItr->second)
+				//原因：_Where 和 mapItr->second是同一个元素的迭代器 可能是同一迭代器。如果是同一元素的迭代器，先erase(mapItr->second)会导致 _Where失效，从而导致insert崩溃
 				listItr = list_.insert(_Where, val);
+				list_.erase(mapItr->second);
 				mapItr->second = listItr;
+
+				//方案二：
+				//if (_Where == mapItr->second)
+				//{ //如果 _Where 和 mapItr->second是同一个元素的迭代器 [特别需要注意]
+				//	const mapped_type *p = &(_Where->second);
+				//	const_cast<mapped_type*>(p)->operator=(val.second);//调用mapped_type的赋值构造函数
+				//	//const_cast<mapped_type*>(&(_Where->second))->operator=(val.second); //调用mapped_type的赋值构造函数
+				//}
+				//else
+				//{
+				//	listItr = list_.insert(_Where, val);
+				//	list_.erase(mapItr->second);					
+				//	mapItr->second = listItr;
+				//}
 
 				std::cout << __FUNCTION__ << "[key:" << val.first << "] is existed, be covered!!!" << std::endl;
 			}
@@ -178,6 +200,29 @@ public:
 	}
 
 	//**************************************************************************************************
+	inline list_iterator push_front(const list_value_type &val, bool &bExisted)
+	{
+		return insert(list_.begin(), val, bExisted);
+	}
+
+	inline list_iterator push_front(const key_type &new_k, const mapped_type &v, bool &bExisted)
+	{
+		return insert(list_.begin(), list_value_type(new_k, v), bExisted);
+	}
+
+	inline list_iterator push_front(const list_value_type &val)
+	{
+		bool bExisted = false;
+		return insert(list_.begin(), val, bExisted);
+	}
+
+	inline list_iterator push_front(const key_type &new_k, const mapped_type &v)
+	{
+		bool bExisted = false;
+		return insert(list_.begin(), list_value_type(new_k, v), bExisted);
+	}
+
+	//**************************************************************************************************
 
 	void pop_front()
 	{
@@ -186,8 +231,6 @@ public:
 			list_iterator listItr = list_.begin();
 			if (listItr != list_.end())
 			{
-				//注意erase的顺序
-				//1. 先移除map中的元素
 				map_.erase(listItr->first);
 				list_.erase(listItr);
 			}
@@ -201,8 +244,6 @@ public:
 			list_iterator listItr = --list_.end();
 			if (listItr != list_.end())
 			{
-				//注意erase的顺序
-				//1. 先移除map中的元素
 				map_.erase(listItr->first);
 				list_.erase(listItr);
 			}
@@ -230,6 +271,8 @@ public:
 
 	list_iterator erase(const_list_iterator listItr)
 	{
+		assert(listItr._Getcont() == &list_); //检查迭代器是否失效了,借鉴 list的insert,判断迭代器是否失效
+
 		if (listItr == list_.end())
 			return list_.end();
 		assert(map_.find(listItr->first) != map_.end());
