@@ -32,12 +32,19 @@ namespace stdcxx
 
 namespace linked_hash_map_test
 {
+#define STUDENT_PARAMS(id) id,id,#id
 	class Student
 	{
 	public:
-		Student() :id_(-1), age_(-1) { cout << __FUNCTION__ << "default construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; }
-		Student(int id, int age, const std::string &name) :id_(id), age_(age), name_(name) { cout << __FUNCTION__ << "construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; }
-		~Student() { cout << __FUNCTION__ << "destroy id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; }
+		Student() :id_(-1), age_(-1) { 
+			//cout << __FUNCTION__ << "default construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
+		}
+		Student(int id, int age, const std::string &name) :id_(id), age_(age), name_(name) { 
+			//cout << __FUNCTION__ << "construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
+		}
+		~Student() { 
+			//cout << __FUNCTION__ << "destroy id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
+		}
 
 		int id()const { return id_; }
 		int age()const { return age_; }
@@ -45,7 +52,7 @@ namespace linked_hash_map_test
 
 		void show()
 		{
-			cout << __FUNCTION__ <<"id:" << id_ << "age:" << age_ << "  name:" << name_ << endl;
+			cout << __FUNCTION__ << "id:" << id_ << "age:" << age_ << "  name:" << name_ << endl;
 		}
 	public:
 		int id_;
@@ -87,7 +94,7 @@ namespace linked_hash_map_test
 			return seed;
 		}
 	};
-	
+
 
 	class test_case
 	{
@@ -95,37 +102,57 @@ namespace linked_hash_map_test
 		//普通对象
 		static void test1()
 		{
-			cout <<__FUNCTION__ <<"**********************************************************" << endl;
-			linked_hash_map<int, Student> linked;
+			cout << __FUNCTION__ << "**********************************************************" << endl;
+			linked_hash_map<int, Student,true> linked;
 			typedef linked_hash_map<int, Student>::list_value_type list_value_type;
-			//Student s0(0, 20, "a0");		
-			//Student s1(1, 21, "a1");
-			//Student s2(2, 22, "a2");
-			//Student s3(3, 23, "a3");
-			//Student s4(4, 24, "a4");
-			//Student s5(5, 25, "a5");
-			//Student s6(6, 26, "a6");
-			//linked.push_back(std::make_pair(s0.id(), s0));
-			//linked.push_back(std::make_pair(s1.id(), s1));
-			//linked.push_back(std::make_pair(s2.id(), s2));
-			//linked.push_back(std::make_pair(s3.id(), s3));
-			//linked.push_back(std::make_pair(s4.id(), s4));
-			//linked.push_back(std::make_pair(s5.id(), s5));
-			//linked.push_back(std::make_pair(s6.id(), s6));
+			bool bExisted = false;
+			Student s1(1, 1, "a1");
+			Student s2(2, 2, "a2");
+			Student s3(3, 3, "a3");
+			Student s4(4, 4, "a4");
 
-			int id = 0;
-			//linked.push_back(id, Student(0, 0, "a0"));
-			linked.push_back(1, Student(1, 1, "a1"));
+			//push_back
+			//std::make_pair
+			linked.push_back(std::make_pair(s1.id(), s1));
+			linked.push_back(std::make_pair(s2.id(), s2));
+			linked.push_back(std::make_pair(s3.id(), s3), bExisted);
+			linked.push_back(std::make_pair(s4.id(), s4), bExisted);
+			//list_value_type
+			auto itr5 = linked.push_back(list_value_type(5, Student(5, 5, "a5")));
+			auto itr6 = linked.push_back(list_value_type(6, Student(6, 6, "a6")));
+			auto itr7 = linked.push_back(list_value_type(7, Student(7, 7, "a7")), bExisted);
+			linked.push_back(list_value_type(8, Student(8, 8, "a8")), bExisted);
 
-			linked.push_back(std::make_pair(2, Student(2, 2, "a2")));
-			linked.push_back(list_value_type(3, Student(3, 3, "a3")));
+			auto itr21 = linked.push_back(21, Student(21, 21, "a21"));
+			auto itr22 = linked.push_back(22, Student(22, 22, "a22"));
+			auto itr23 = linked.push_back(23, Student(23, 23, "a23"), bExisted);
+			auto itr24 = linked.push_back(24, Student(24, 24, "a24"), bExisted);
 
-			linked.insert(1, 11, Student(11, 11, "a11"));
+			//特殊测试			
+			//linked.erase(itr23);  修正：push_back不返回迭代器，返回的迭代器容易造成误用，最好还是和 标准库的行为一致
+			//linked.erase(23);
 
-			id = 2;
-			linked.insert(id, 12, Student(12, 12, "a12"));
+			//insert itr
+			linked.insert(itr23, 33, Student(STUDENT_PARAMS(33)));
+			linked.insert(itr24, 34, Student(STUDENT_PARAMS(34)));
+			linked.insert(itr21, 31, Student(STUDENT_PARAMS(31)), bExisted);
+			linked.insert(itr22, 32, Student(STUDENT_PARAMS(32)), bExisted);
 
-			
+			linked.insert(itr23, list_value_type(43, Student(STUDENT_PARAMS(43))));
+			linked.insert(itr23, std::make_pair(53, Student(STUDENT_PARAMS(53))));
+			linked.insert(itr24, list_value_type(44, Student(STUDENT_PARAMS(44))), bExisted);
+			linked.insert(itr24, std::make_pair(54, Student(STUDENT_PARAMS(54))), bExisted);
+
+			//insert key
+			linked.insert(23, 63, Student(STUDENT_PARAMS(63)));
+			linked.insert(23, 73, Student(STUDENT_PARAMS(73)));
+			linked.insert(24, 64, Student(STUDENT_PARAMS(64)), bExisted);
+			linked.insert(24, 74, Student(STUDENT_PARAMS(74)), bExisted);
+
+			linked.insert(23, list_value_type(83, Student(STUDENT_PARAMS(83))));
+			linked.insert(23, std::make_pair(93, Student(STUDENT_PARAMS(93))));
+			linked.insert(24, list_value_type(84, Student(STUDENT_PARAMS(84))), bExisted);
+			linked.insert(24, std::make_pair(94, Student(STUDENT_PARAMS(94))), bExisted);
 
 			for (auto &elem : linked)
 			{
@@ -134,27 +161,70 @@ namespace linked_hash_map_test
 
 			cout << __FUNCTION__ << "**********************************************************" << endl;
 
+			//erase
+			decltype(itr23._Getcont()) t = itr23._Getcont();
+			linked.erase(23);
+			t = itr23._Getcont();
+			linked.erase(itr24);
+			t = itr24._Getcont();
+
+			//find
+			auto itrFind = linked.find(23);
+			assert(itrFind == linked.end());
+
+			itrFind = linked.find(24);
+			assert(itrFind == linked.end());
+
+			itrFind = linked.find(101);
+			assert(itrFind == linked.end());
+
+			itrFind = linked.find(5);
+			assert(itrFind != linked.end());
+
+			itrFind = linked.find(2);
+			assert(itrFind != linked.end());
+			auto itr102 = linked.insert(itrFind, 102, Student(STUDENT_PARAMS(102)));
+
+			linked.insert(itr102, 112, Student(STUDENT_PARAMS(112)));
+
+			//insert same key
+			auto itr8 = linked.insert(itr102, 8, Student(STUDENT_PARAMS(888)));
+			
+			linked.insert(itr8, 108, Student(STUDENT_PARAMS(108)));
+			
+			//遍历
 			for (auto itr = linked.begin(); itr != linked.end(); ++itr)
 			{
 				cout << itr->second << endl;
 			}
+
+			cout << __FUNCTION__ << "**********************************************************" << endl;
+
+			for (auto rItr = linked.rbegin(); rItr != linked.rend(); ++rItr)
+			{
+				cout << rItr->second << endl;
+			}
 		}
 
-		//智能指针
 		static void test2()
 		{
 			cout << __FUNCTION__ << "**********************************************************" << endl;
+			linked_hash_map<int, Student> linked;
+		}
+
+		//智能指针
+		static void test3()
+		{
+			cout << __FUNCTION__ << "**********************************************************" << endl;
 			linked_hash_map<int, Student_sptr> linked;
-
-			
-
 
 		}
 	public:
 		static void test_all()
 		{
-			test1();
-			test2();
+			//test1();
+			//test2();
+			test3();
 		}
 	};
 }
