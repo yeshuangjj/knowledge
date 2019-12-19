@@ -36,13 +36,13 @@ namespace linked_hash_map_test
 	class Student
 	{
 	public:
-		Student() :id_(-1), age_(-1) { 
+		Student() :id_(-1), age_(-1) {
 			//cout << __FUNCTION__ << "default construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
 		}
-		Student(int id, int age, const std::string &name) :id_(id), age_(age), name_(name) { 
+		Student(int id, int age, const std::string &name) :id_(id), age_(age), name_(name) {
 			//cout << __FUNCTION__ << "construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
 		}
-		~Student() { 
+		~Student() {
 			//cout << __FUNCTION__ << "destroy id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
 		}
 
@@ -103,7 +103,7 @@ namespace linked_hash_map_test
 		static void test1()
 		{
 			cout << __FUNCTION__ << "**********************************************************" << endl;
-			linked_hash_map<int, Student,true> linked;
+			linked_hash_map<int, Student, true> linked;
 			typedef linked_hash_map<int, Student>::list_value_type list_value_type;
 			bool bExisted = false;
 			Student s1(1, 1, "a1");
@@ -189,9 +189,9 @@ namespace linked_hash_map_test
 
 			//insert same key
 			auto itr8 = linked.insert(itr102, 8, Student(STUDENT_PARAMS(888)));
-			
+
 			linked.insert(itr8, 108, Student(STUDENT_PARAMS(108)));
-			
+
 			//±éÀú
 			for (auto itr = linked.begin(); itr != linked.end(); ++itr)
 			{

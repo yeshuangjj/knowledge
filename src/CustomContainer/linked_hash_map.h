@@ -6,46 +6,6 @@
 #include <list>
 #include <mutex>
 #include <assert.h>
-//#include <vector>
-//#include <boost/unordered_map.hpp>
-
-
-
-//class dummy_mutex
-//{
-//public:
-//	dummy_mutex() = default;
-//	~dummy_mutex() = default;
-//	dummy_mutex(const dummy_mutex&) = delete;
-//	dummy_mutex& operator=(const dummy_mutex&) = delete;
-//	inline void lock() {}
-//	inline void unlock() {}
-//};
-//template<class _Kty,
-//	class _Ty,
-//	class _Hasher = std::hash<_Kty>,
-//	class _Keyeq = std::equal_to<_Kty>,
-//	class _Mutex = std::mutex
-//>
-//class linked_hash_map
-//{
-//public:
-//	//thread-safe
-//	typedef _Mutex mutex_type;
-//	typedef std::lock_guard<mutex_type> lock_type;
-//}
-
-////不能将迭代器暴露出去。返回一个副本，才能保证线程安全
-//bool find(const key_type &k,mapped_type & v)
-//{
-//	lock_type lock(mutex_);
-//	map_iterator mapItr = map_.find(k);
-//	if (mapItr != map_.end())
-//	{
-//		return true;
-//	}
-//	return false;
-//}
 
 /*
 * 支持快速查找的功能
@@ -68,7 +28,7 @@ template<class _Kty,
 	class _Ty,
 	bool _IsConvered = false,       //when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
 	class _Hasher = std::hash<_Kty>,
-	class _Keyeq = std::equal_to<_Kty>	
+	class _Keyeq = std::equal_to<_Kty>
 >
 class linked_hash_map
 {
