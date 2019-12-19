@@ -241,3 +241,4 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 /src/CustomContainer/linked_hash_map - 副本.h
+/src/CustomContainer/linked_hash_map_copy.h

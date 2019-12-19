@@ -1,5 +1,7 @@
-#ifndef HORSE_LINKED_HASH_MAP
-#define HORSE_LINKED_HASH_MAP
+#pragma once
+
+#ifndef HORSE_SIMPLE_LINKED_HASH_MAP
+#define HORSE_SIMPLE_LINKED_HASH_MAP
 
 #ifdef _WIN32
 #pragma once
@@ -9,39 +11,60 @@
 #include <list>
 #include <assert.h>
 
-/*
-* 支持快速查找的功能
-* (1)思路:
-*     typedef typename std::pair<const key_type, mapped_type>   list_value_type;
-*     typedef typename std::pair<const key_type, list_iterator> map_value_type; //map_的元素类型 (list的迭代器不会因为 插入或删除其他元素而导致迭代器失效。如果使用vector,会因为插入其他项导致迭代器失效)
-*     list_iterator迭代器指向的元素类型为 list_value_type
-*     list_value_type.first  <==> key_type
-*     map_value_type.first   <==> key_type
-*     map_value_type.second  <==> list_iterator
-*
-* (2)注意事项：两个容器 插入保持一致性，删除保持一致性
-* (3)有待验证:需要测试 和 检查逻辑
-*	 特别要注意：_IsConvered为true时的逻辑, 插入相同key的元素时，会造成 old elem的迭代器失效。
-*
-*
-*/
+/***
+例子：
+class Student
+{
+public:
+	inline const int &id()const { return id_; }
+	inline const int &key()const { return id_; }
+private:
+	int id_;
+	std::string name_;
+};
+
+struct KeyOfStudent
+{
+	inline const int& operator()(const Student&l)const
+	{
+		return l.id();
+	}
+};
+
+
+****/
+
+/***
+* @brief:要求 类型 _Ty 成员函数 key()
+***/
+template<class _Kty, class _Ty>
+struct default_obtain_key_func_of_simple_linked_hash_map
+{
+	inline const _Kty &operator()(const _Ty& l)
+	{
+		return l.key();
+	}
+};
 
 template<class _Kty,
 	class _Ty,
-	bool _IsConvered = false,            //when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
+	class _ObtainKeyFunc = default_obtain_key_func_of_simple_linked_hash_map< _Ty, _Kty >,  // 函数或仿函数
+	bool _IsConvered = false,                                                        // when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
 	class _Hasher = std::hash<_Kty>,
 	class _Keyeq = std::equal_to<_Kty>
 >
-class linked_hash_map
+class simple_linked_hash_map
 {
 public:
 	typedef _Kty key_type;
-	typedef _Ty mapped_type;
+	typedef _Ty list_value_type;
 	typedef _Hasher hasher;
 	typedef _Keyeq key_equal;
+	typedef _ObtainKeyFunc obtain_key_func;
 
-	typedef typename std::pair<const key_type, mapped_type> list_value_type; //list_的元素类型 （key_type是不允许改变的,必须使用const）
+	typedef std::list<list_value_type> list_type;
 	typedef typename std::list<list_value_type> list_type;
+
 	typedef typename list_type::size_type size_type;
 	typedef typename list_type::reference list_reference;
 	typedef typename list_type::const_reference const_list_reference;
@@ -58,11 +81,15 @@ public:
 	typedef list_reverse_iterator reverse_iterator;
 	typedef const_list_reverse_iterator const_reverse_iterator;
 private:
-	typedef typename std::pair<const key_type, list_iterator> map_value_type; //map_的元素类型 (list的迭代器不会失效)
+	//map_的元素类型 (list的迭代器不会失效)  这里不能使用 std::pair<const key_type, const_list_iterator >,因为find()函数会返回list_iterator
+	typedef typename std::pair<const key_type, list_iterator > map_value_type;
 	typedef typename std::allocator<map_value_type> map_allocator_type;
 	typedef typename std::unordered_map<key_type, list_iterator, hasher, key_equal, map_allocator_type> hash_map_type;  //使用迭代器，就不用拷贝副本
 	typedef typename hash_map_type::iterator map_iterator;
 	typedef typename hash_map_type::const_iterator const_map_iterator;
+public:
+	simple_linked_hash_map() = default;
+	~simple_linked_hash_map() = default;
 private:
 	/**
 	* @brief:core of algorithm.
@@ -74,7 +101,10 @@ private:
 	{
 		assert(_Where._Getcont() == &list_); //检查迭代器是否失效了,借鉴 list的insert,判断迭代器是否失效
 
-		map_iterator mapItr = map_.find(val.first);
+		static 	obtain_key_func s_obtain_key_func; //避免重复构造
+		auto &k = s_obtain_key_func(val);
+
+		map_iterator mapItr = map_.find(k);
 		list_iterator listItr = list_.end();
 		if (mapItr != map_.end())
 		{//this key is existed
@@ -116,19 +146,15 @@ private:
 			std::cout << __FUNCTION__ << "[key:" << val.first << "] is not existed!!!" << std::endl;
 			bExisted = false;
 			listItr = list_.insert(_Where, val);
-			map_.insert(map_value_type(val.first, listItr));
+			map_.insert(map_value_type(k, listItr));
 		}
 		return listItr;
 	}
+
 public:
 	inline list_iterator insert(const_list_iterator _Where, const list_value_type &val, bool &bExisted)
 	{
 		return _Insert(_Where, val, _IsConvered, bExisted);
-	}
-
-	inline list_iterator insert(const_list_iterator _Where, const key_type &new_k, const mapped_type &v, bool &bExisted)
-	{
-		return _Insert(_Where, list_value_type(new_k, v), _IsConvered, bExisted);
 	}
 
 	/*if not found key,equal to push_back*/
@@ -142,16 +168,6 @@ public:
 		return insert(listItr, val, bExisted);
 	}
 
-	list_iterator insert(const key_type &k, const key_type &new_k, const mapped_type &v, bool &bExisted)
-	{
-		map_iterator mapItr = map_.find(k);
-		list_iterator listItr = list_.end();
-		if (mapItr != map_.end())
-			listItr = mapItr->second;
-
-		return insert(listItr, list_value_type(new_k, v), bExisted);
-	}
-
 	//**************************************************************************************************
 	/*ignore param：bExisted*/
 	list_iterator insert(const_list_iterator _Where, const list_value_type &val)
@@ -160,22 +176,10 @@ public:
 		return _Insert(_Where, val, _IsConvered, bExisted);
 	}
 
-	inline list_iterator insert(const_list_iterator _Where, const key_type &new_k, const mapped_type &v)
-	{
-		bool bExisted = false;
-		return _Insert(_Where, list_value_type(new_k, v), _IsConvered, bExisted);
-	}
-
 	list_iterator insert(const key_type &k, const list_value_type &val)
 	{
 		bool bExisted = false;
 		return insert(k, val, bExisted);
-	}
-
-	list_iterator insert(const key_type &k, const key_type &new_k, const mapped_type &v)
-	{
-		bool bExisted = false;
-		return insert(k, new_k, v, bExisted);
 	}
 
 	//**************************************************************************************************
@@ -184,21 +188,10 @@ public:
 		return insert(list_.end(), val, bExisted);
 	}
 
-	inline list_iterator push_back(const key_type &new_k, const mapped_type &v, bool &bExisted)
-	{
-		return insert(list_.end(), list_value_type(new_k, v), bExisted);
-	}
-
 	inline list_iterator push_back(const list_value_type &val)
 	{
 		bool bExisted = false;
 		return insert(list_.end(), val, bExisted);
-	}
-
-	inline list_iterator push_back(const key_type &new_k, const mapped_type &v)
-	{
-		bool bExisted = false;
-		return insert(list_.end(), list_value_type(new_k, v), bExisted);
 	}
 
 	//**************************************************************************************************
@@ -207,25 +200,13 @@ public:
 		return insert(list_.begin(), val, bExisted);
 	}
 
-	inline list_iterator push_front(const key_type &new_k, const mapped_type &v, bool &bExisted)
-	{
-		return insert(list_.begin(), list_value_type(new_k, v), bExisted);
-	}
-
 	inline list_iterator push_front(const list_value_type &val)
 	{
 		bool bExisted = false;
 		return insert(list_.begin(), val, bExisted);
 	}
 
-	inline list_iterator push_front(const key_type &new_k, const mapped_type &v)
-	{
-		bool bExisted = false;
-		return insert(list_.begin(), list_value_type(new_k, v), bExisted);
-	}
-
 	//**************************************************************************************************
-
 	void pop_front()
 	{
 		if (list_.empty() == false)
@@ -433,10 +414,9 @@ public:
 		assert(list_.size() == map_.size());
 		return list_.size();
 	}
-
 private:
 	list_type list_;
 	hash_map_type map_;
 };
 
-#endif //!HORSE_LINKED_HASH_MAP
+#endif //!HORSE_SIMPLE_LINKED_HASH_MAP
