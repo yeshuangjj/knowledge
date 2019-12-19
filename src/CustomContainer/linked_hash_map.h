@@ -1,6 +1,9 @@
 #ifndef HORSE_LINKED_HASH_MAP
 #define HORSE_LINKED_HASH_MAP
+
+#ifdef _WIN32
 #pragma once
+#endif
 
 #include <unordered_map>
 #include <list>
@@ -18,15 +21,15 @@
 *     map_value_type.second  <==> list_iterator
 *
 * (2)注意事项：两个容器 插入保持一致性，删除保持一致性
-* (3)有待验证
-*
+* (3)有待验证:需要测试 和 检查逻辑
+*	 特别要注意：_IsConvered为true时的逻辑, 插入相同key的元素时，会造成 old elem的迭代器失效。
 *
 *
 */
 
 template<class _Kty,
 	class _Ty,
-	bool _IsConvered = false,       //when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
+	bool _IsConvered = false,            //when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
 	class _Hasher = std::hash<_Kty>,
 	class _Keyeq = std::equal_to<_Kty>
 >
@@ -64,7 +67,7 @@ private:
 private:
 	/**
 	* @brief:core of algorithm.
-	*        note,if bExisted is true, will cause "_Where" to be invalid
+	*        note,if bExisted is true,and _Where== mapItr->second, will cause "_Where" to be invalid
 	* @param:
 	* @return:
 	**/
@@ -83,9 +86,9 @@ private:
 				//方案一：
 				//必须先调用list_.insert(_Where, val) ,然后再条用 list_.erase(mapItr->second)
 				//原因：_Where 和 mapItr->second是同一个元素的迭代器 可能是同一迭代器。如果是同一元素的迭代器，先erase(mapItr->second)会导致 _Where失效，从而导致insert崩溃
-				listItr = list_.insert(_Where, val);
-				list_.erase(mapItr->second);
-				mapItr->second = listItr;
+				listItr = list_.insert(_Where, val); //插入新元素
+				list_.erase(mapItr->second);         //删除旧元素
+				mapItr->second = listItr;			 //保存新的迭代器
 
 				//方案二：
 				//if (_Where == mapItr->second)

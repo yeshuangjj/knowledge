@@ -37,13 +37,13 @@ namespace linked_hash_map_test
 	{
 	public:
 		Student() :id_(-1), age_(-1) {
-			//cout << __FUNCTION__ << "default construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
+			cout << __FUNCTION__ << "default construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
 		}
 		Student(int id, int age, const std::string &name) :id_(id), age_(age), name_(name) {
-			//cout << __FUNCTION__ << "construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
+			cout << __FUNCTION__ << "construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
 		}
 		~Student() {
-			//cout << __FUNCTION__ << "destroy id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
+			cout << __FUNCTION__ << "destroy id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
 		}
 
 		int id()const { return id_; }
@@ -242,13 +242,38 @@ namespace linked_hash_map_test
 		static void test3()
 		{
 			cout << __FUNCTION__ << "**********************************************************" << endl;
-			linked_hash_map<int, Student_sptr> linked;
+			linked_hash_map<int, Student_sptr,false> linked;
+			linked.push_back(1, stdcxx::make_shared<Student>(STUDENT_PARAMS(1)));
+			linked.push_back(1, stdcxx::make_shared<Student>(STUDENT_PARAMS(1)));
+			linked.push_back(2, stdcxx::make_shared<Student>(STUDENT_PARAMS(2)));
+			linked.push_back(3, stdcxx::make_shared<Student>(STUDENT_PARAMS(3)));
+			linked.push_back(4, stdcxx::make_shared<Student>(STUDENT_PARAMS(4)));
+
+			for (auto &elem : linked)
+			{
+				assert(elem.second);
+				cout << elem.second << endl;
+			}
+
+			cout << __FUNCTION__ << "**********************************************************" << endl;
+			for (auto itr = linked.cbegin(); itr != linked.end(); ++itr)
+			{
+				assert(itr->second);
+				auto &t = itr->second;
+				cout << itr->second << endl;
+			}
+			cout << __FUNCTION__ << "**********************************************************" << endl;
+			for (auto rItr = linked.crbegin(); rItr != linked.crend(); ++rItr)
+			{
+				assert(rItr->second);
+				cout << rItr->second << endl;
+			}
 
 		}
 	public:
 		static void test_all()
 		{
-			test1();
+			//test1();
 			//test2();
 			test3();
 		}
