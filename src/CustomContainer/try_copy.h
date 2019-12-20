@@ -9,7 +9,7 @@
 class dummy_mutex
 {
 public:
-	dummy_mutex() = default;
+	dummy_mutex() = default; 
 	~dummy_mutex() = default;
 
 	dummy_mutex(const dummy_mutex&) = delete;

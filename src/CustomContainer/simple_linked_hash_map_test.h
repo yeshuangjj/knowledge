@@ -8,7 +8,6 @@ using std::endl;
 
 #ifndef DISABLE_STD
 #include <memory>
-#include <xhash>
 #else
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -64,11 +63,19 @@ namespace simple_linked_hash_map_test
 		return strm;
 	}
 
-	struct KeyOfStudent
+	struct ObtainKeyOfStudent
 	{
 		inline const int& operator()(const Student&l)const
 		{
 			return l.id();
+		}
+	};
+
+	struct ObtainKeyOfStudentPtr
+	{
+		inline const int& operator()(const Student_sptr &sp)const
+		{
+			return sp->id();
 		}
 	};
 
@@ -77,7 +84,7 @@ namespace simple_linked_hash_map_test
 	private:
 		static void test1()
 		{
-			simple_linked_hash_map<int, Student, KeyOfStudent> linked;
+			simple_linked_hash_map<int, Student, ObtainKeyOfStudent> linked;
 			linked.push_back(Student(STUDENT_PARAM(1)));
 			linked.push_back(Student(STUDENT_PARAM(2)));
 			linked.push_back(Student(STUDENT_PARAM(3)));
@@ -120,14 +127,56 @@ namespace simple_linked_hash_map_test
 			}
 		}
 
+		// std::shared_ptr
 		static void test2()
 		{
+			simple_linked_hash_map<int, Student_sptr, default_obtain_key_func_of_simple_linked_hash_map<int, Student_sptr>> linked;
+			linked.push_back(stdcxx::make_shared<Student>(STUDENT_PARAM(1)));
+			linked.push_back(stdcxx::make_shared<Student>(STUDENT_PARAM(2)));
+			linked.push_back(stdcxx::make_shared<Student>(STUDENT_PARAM(3)));
+			linked.push_back(stdcxx::make_shared<Student>(STUDENT_PARAM(4)));
+			linked.push_back(stdcxx::make_shared<Student>(STUDENT_PARAM(5)));
+			linked.push_back(stdcxx::make_shared<Student>(STUDENT_PARAM(5)));
+			linked.push_back(stdcxx::make_shared<Student>(STUDENT_PARAM(3)));
 
+			for (auto &elem : linked)
+			{
+				cout << elem << endl;
+			}
+
+			cout << __FUNCTION__ << "*************************************************************************" << endl;
+
+			for (auto itr = linked.begin(); itr != linked.end(); ++itr)
+			{
+				cout << *itr << endl;
+			}
+
+
+			cout << __FUNCTION__ << "*************************************************************************" << endl;
+
+			for (auto itr = linked.cbegin(); itr != linked.cend(); ++itr)
+			{
+				cout << *itr << endl;
+			}
+
+			cout << __FUNCTION__ << "*************************************************************************" << endl;
+
+			for (auto itr = linked.rbegin(); itr != linked.rend(); ++itr)
+			{
+				cout << *itr << endl;
+			}
+
+			cout << __FUNCTION__ << "*************************************************************************" << endl;
+
+			for (auto itr = linked.crbegin(); itr != linked.crend(); ++itr)
+			{
+				cout << *itr << endl;
+			}
 		}
 	public:
 		static void test_all()
 		{
-			test1();
+			//test1();
 			test2();
 		}
 	};

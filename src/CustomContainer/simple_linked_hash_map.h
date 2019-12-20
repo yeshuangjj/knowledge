@@ -10,6 +10,13 @@
 #include <unordered_map>
 #include <list>
 #include <assert.h>
+#include <memory>
+
+#define SHARED_PTR_ENABLE_BOOST
+#ifdef SHARED_PTR_ENABLE_BOOST
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#endif
 
 /***
 例子：
@@ -30,13 +37,12 @@ struct KeyOfStudent
 		return l.id();
 	}
 };
-
-
 ****/
 
 /***
 * @brief:要求 类型 _Ty 成员函数 key()
 ***/
+
 template<class _Kty, class _Ty>
 struct default_obtain_key_func_of_simple_linked_hash_map
 {
@@ -46,8 +52,30 @@ struct default_obtain_key_func_of_simple_linked_hash_map
 	}
 };
 
-//智能指针的特例化
-//？？？？
+//模板特例化:std智能指针的偏特化
+template<class _Kty, class _Ty>
+struct default_obtain_key_func_of_simple_linked_hash_map< _Kty, std::shared_ptr<_Ty> >
+{
+	inline const _Kty &operator()(const std::shared_ptr<_Ty>& sp)
+	{
+		assert(sp);
+		return sp->key();
+	}
+};
+
+#ifdef SHARED_PTR_ENABLE_BOOST
+//模板特例化:boost智能指针的偏特化
+template<class _Kty, class _Ty>
+struct default_obtain_key_func_of_simple_linked_hash_map< _Kty, boost::shared_ptr<_Ty> >
+{
+	inline const _Kty &operator()(const boost::shared_ptr<_Ty>& sp)
+	{
+		BOOST_ASSERT(sp);
+		return sp->key();
+	}
+};
+#endif
+
 
 template<class _Kty,
 	class _Ty,
