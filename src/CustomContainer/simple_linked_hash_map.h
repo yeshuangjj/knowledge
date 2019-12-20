@@ -46,9 +46,12 @@ struct default_obtain_key_func_of_simple_linked_hash_map
 	}
 };
 
+//智能指针的特例化
+//？？？？
+
 template<class _Kty,
 	class _Ty,
-	class _ObtainKeyFunc = default_obtain_key_func_of_simple_linked_hash_map< _Ty, _Kty >,  // 函数或仿函数
+	class _ObtainKeyFunc = default_obtain_key_func_of_simple_linked_hash_map<_Kty , _Ty>,  // 函数或仿函数
 	bool _IsConvered = false,                                                        // when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
 	class _Hasher = std::hash<_Kty>,
 	class _Keyeq = std::equal_to<_Kty>
@@ -101,8 +104,9 @@ private:
 	{
 		assert(_Where._Getcont() == &list_); //检查迭代器是否失效了,借鉴 list的insert,判断迭代器是否失效
 
-		static 	obtain_key_func s_obtain_key_func; //避免重复构造
-		auto &k = s_obtain_key_func(val);
+		//这里是关键所在
+		static 	obtain_key_func obtain_key; //避免重复构造
+		const key_type &k = obtain_key(val);
 
 		map_iterator mapItr = map_.find(k);
 		list_iterator listItr = list_.end();
@@ -133,17 +137,17 @@ private:
 				//	mapItr->second = listItr;
 				//}
 
-				std::cout << __FUNCTION__ << "[key:" << val.first << "] is existed, be covered!!!" << std::endl;
+				std::cout << __FUNCTION__ << "[key:" << k << "] is existed, be covered!!!" << std::endl;
 			}
 			else
 			{
 				listItr = mapItr->second;
-				std::cout << __FUNCTION__ << "[key:" << val.first << "] is existed, do nothing!!!" << std::endl;
+				std::cout << __FUNCTION__ << "[key:" << k << "] is existed, do nothing!!!" << std::endl;
 			}
 		}
 		else
 		{
-			std::cout << __FUNCTION__ << "[key:" << val.first << "] is not existed!!!" << std::endl;
+			std::cout << __FUNCTION__ << "[key:" << k << "] is not existed!!!" << std::endl;
 			bExisted = false;
 			listItr = list_.insert(_Where, val);
 			map_.insert(map_value_type(k, listItr));

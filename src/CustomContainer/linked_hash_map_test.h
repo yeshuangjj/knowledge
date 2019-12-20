@@ -37,13 +37,13 @@ namespace linked_hash_map_test
 	{
 	public:
 		Student() :id_(-1), age_(-1) {
-			cout << __FUNCTION__ << "default construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
+			cout << __FUNCTION__ << ":default construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
 		}
 		Student(int id, int age, const std::string &name) :id_(id), age_(age), name_(name) {
-			cout << __FUNCTION__ << "construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
+			cout << __FUNCTION__ << ":construct id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
 		}
 		~Student() {
-			cout << __FUNCTION__ << "destroy id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
+			cout << __FUNCTION__ << ":destroy id:" << id_ << "age:" << age_ << "  name:" << name_ << endl; 
 		}
 
 		int id()const { return id_; }
