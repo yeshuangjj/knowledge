@@ -12,10 +12,9 @@
 #include <assert.h>
 #include <memory>
 
-#define SHARED_PTR_ENABLE_BOOST
+//#define SHARED_PTR_ENABLE_BOOST
 #ifdef SHARED_PTR_ENABLE_BOOST
 #include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
 #endif
 
 /***
@@ -99,8 +98,8 @@ struct default_obtain_key_func_of_simple_linked_hash_map< _Kty, boost::shared_pt
 
 template<class _Kty,
 	class _Ty,
-	class _ObtainKeyFunc = default_obtain_key_func_of_simple_linked_hash_map<_Kty , _Ty>,  // 函数或仿函数
-	bool _IsConvered = false,                                                              // when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
+	class _ObtainKeyFunc = default_obtain_key_func_of_simple_linked_hash_map<_Kty, _Ty>,  // 函数或仿函数
+	bool _IsConvered = false,                                                             // when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
 	class _Hasher = std::hash<_Kty>,
 	class _Keyeq = std::equal_to<_Kty>
 >
@@ -133,9 +132,11 @@ public:
 	typedef const_list_reverse_iterator const_reverse_iterator;
 private:
 	//map_的元素类型 (list的迭代器不会失效)  这里不能使用 std::pair<const key_type, const_list_iterator >,因为find()函数会返回list_iterator
-	typedef typename std::pair<const key_type, list_iterator > map_value_type;
-	typedef typename std::allocator<map_value_type> map_allocator_type;
-	typedef typename std::unordered_map<key_type, list_iterator, hasher, key_equal, map_allocator_type> hash_map_type;  //使用迭代器，就不用拷贝副本
+	//typedef typename std::pair<const key_type, list_iterator > map_value_type;
+	//typedef typename std::allocator<map_value_type> map_allocator_type;
+	//typedef typename std::unordered_map<const key_type, list_iterator, hasher, key_equal, map_allocator_type> hash_map_type;  //使用迭代器，就不用拷贝副本
+	typedef typename std::unordered_map<key_type, list_iterator, hasher, key_equal> hash_map_type;  //使用迭代器，就不用拷贝副本
+	typedef typename hash_map_type::value_type map_value_type;
 	typedef typename hash_map_type::iterator map_iterator;
 	typedef typename hash_map_type::const_iterator const_map_iterator;
 public:

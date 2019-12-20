@@ -273,8 +273,8 @@ namespace linked_hash_map_test
 	public:
 		static void test_all()
 		{
-			//test1();
-			//test2();
+			test1();
+			test2();
 			test3();
 		}
 	};

@@ -58,9 +58,11 @@ public:
 	typedef list_reverse_iterator reverse_iterator;
 	typedef const_list_reverse_iterator const_reverse_iterator;
 private:
-	typedef typename std::pair<const key_type, list_iterator> map_value_type; //map_的元素类型 (list的迭代器不会失效)
-	typedef typename std::allocator<map_value_type> map_allocator_type;
-	typedef typename std::unordered_map<key_type, list_iterator, hasher, key_equal, map_allocator_type> hash_map_type;  //使用迭代器，就不用拷贝副本
+	//typedef typename std::pair<const key_type, list_iterator> map_value_type; //map_的元素类型 (list的迭代器不会失效)
+	//typedef typename std::allocator<map_value_type> map_allocator_type;
+	//typedef typename std::unordered_map<key_type, list_iterator, hasher, key_equal, map_allocator_type> hash_map_type;  //使用迭代器，就不用拷贝副本
+	typedef typename std::unordered_map<key_type, list_iterator, hasher, key_equal> hash_map_type;  //使用迭代器，就不用拷贝副本
+	typedef typename hash_map_type::value_type map_value_type;
 	typedef typename hash_map_type::iterator map_iterator;
 	typedef typename hash_map_type::const_iterator const_map_iterator;
 private:

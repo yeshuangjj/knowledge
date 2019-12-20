@@ -75,6 +75,7 @@ namespace simple_linked_hash_map_test
 	{
 		inline const int& operator()(const Student_sptr &sp)const
 		{
+			assert(sp);
 			return sp->id();
 		}
 	};
@@ -176,7 +177,7 @@ namespace simple_linked_hash_map_test
 	public:
 		static void test_all()
 		{
-			//test1();
+			test1();
 			test2();
 		}
 	};
