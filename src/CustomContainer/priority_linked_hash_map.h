@@ -116,9 +116,9 @@ private:
 					if (k == obtain_key(*listItr))
 					{
 						bFind = true;
-						assert(hashMapItr->second== listItr);
+						assert(hashMapItr->second == listItr);
 					}
-						
+
 				}
 			}
 			assert(bFind);
@@ -138,7 +138,7 @@ private:
 			{
 				std::cout << __FUNCTION__ << "[key:" << k << "] is existed, do nothing!!!" << std::endl;
 				return hashMapItr->second;
-			}				
+			}
 		}
 		else
 		{
@@ -176,7 +176,7 @@ private:
 
 			std::cout << __FUNCTION__ << "[key:" << k << "] is not existed!!!" << std::endl;
 			return listItr;
-		}		
+		}
 	}
 
 public:
@@ -208,7 +208,7 @@ public:
 	list_value_type *find(const key_type &k)
 	{
 		hash_map_iterator hashMapItr = hash_map_.find(k);
-		if (hashMapItr != hash_map_.end())		
+		if (hashMapItr != hash_map_.end())
 			return &(*(hashMapItr->second));
 
 		return nullptr;
@@ -231,7 +231,7 @@ private:
 			for (priority_map_iterator priorityMapItr = priority_map_.begin(); priorityMapItr != priority_map_.end(); ++priorityMapItr)
 			{
 				list_type &l = priorityMapItr->second;
-				if(bPopFront)
+				if (bPopFront)
 					l.pop_front();
 				else
 					l.pop_back();
@@ -363,7 +363,7 @@ public:
 		}
 	}
 
-private:	
+private:
 	priority_map_type priority_map_;  //std::map< priority_type, list_type, priority_compare>
 	hash_map_type     hash_map_;
 };

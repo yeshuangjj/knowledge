@@ -428,12 +428,12 @@ public:
 	**/
 	inline list_reference front()
 	{
-		assert(empty()==false);
+		assert(empty() == false);
 		return list_.front();
 	}
 
 	inline const_list_reference front()const
-	{ 
+	{
 		assert(empty() == false);
 		return list_.front();
 	}
@@ -452,7 +452,7 @@ public:
 
 	inline bool empty()const
 	{
-		assert(list_.size()== map_.size());
+		assert(list_.size() == map_.size());
 		return list_.empty();
 	}
 
