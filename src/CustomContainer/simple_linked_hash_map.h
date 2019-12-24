@@ -112,7 +112,6 @@ public:
 	typedef _Keyeq key_equal;
 	typedef _ObtainKeyFunc obtain_key_func;
 
-	typedef std::list<list_value_type> list_type;
 	typedef typename std::list<list_value_type> list_type;
 
 	typedef typename list_type::size_type size_type;
@@ -124,24 +123,27 @@ public:
 	typedef typename list_type::const_reverse_iterator const_list_reverse_iterator;
 
 	//Consistency with the standard library 与标准库保持一致性
-	typedef list_reference reference;
-	typedef const_list_reference const_reference;
-	typedef list_iterator iterator;
-	typedef const_list_iterator const_iterator;
-	typedef list_reverse_iterator reverse_iterator;
-	typedef const_list_reverse_iterator const_reverse_iterator;
+	typedef typename list_reference reference;
+	typedef typename const_list_reference const_reference;
+	typedef typename list_iterator iterator;
+	typedef typename const_list_iterator const_iterator;
+	typedef typename list_reverse_iterator reverse_iterator;
+	typedef typename const_list_reverse_iterator const_reverse_iterator;
 private:
 	//map_的元素类型 (list的迭代器不会失效)  这里不能使用 std::pair<const key_type, const_list_iterator >,因为find()函数会返回list_iterator
 	//typedef typename std::pair<const key_type, list_iterator > map_value_type;
 	//typedef typename std::allocator<map_value_type> map_allocator_type;
 	//typedef typename std::unordered_map<const key_type, list_iterator, hasher, key_equal, map_allocator_type> hash_map_type;  //使用迭代器，就不用拷贝副本
 	typedef typename std::unordered_map<key_type, list_iterator, hasher, key_equal> hash_map_type;  //使用迭代器，就不用拷贝副本
-	typedef typename hash_map_type::value_type map_value_type;
+	typedef typename hash_map_type::value_type map_value_type; //实际上就是 std::pair<const key_type, list_iterator >
 	typedef typename hash_map_type::iterator map_iterator;
 	typedef typename hash_map_type::const_iterator const_map_iterator;
 public:
 	simple_linked_hash_map() = default;
 	~simple_linked_hash_map() = default;
+
+	simple_linked_hash_map(const simple_linked_hash_map&) = delete;
+	simple_linked_hash_map& operator=(const simple_linked_hash_map&) = delete;
 private:
 	/**
 	* @brief:core of algorithm.
@@ -154,7 +156,7 @@ private:
 		assert(_Where._Getcont() == &list_); //检查迭代器是否失效了,借鉴 list的insert,判断迭代器是否失效
 
 		//这里是关键所在
-		static 	obtain_key_func obtain_key; //避免重复构造
+		static obtain_key_func obtain_key; //避免重复构造
 		const key_type &k = obtain_key(val);
 
 		map_iterator mapItr = map_.find(k);
@@ -426,33 +428,31 @@ public:
 	**/
 	inline list_reference front()
 	{
+		assert(empty()==false);
 		return list_.front();
 	}
 
 	inline const_list_reference front()const
-	{
+	{ 
+		assert(empty() == false);
 		return list_.front();
 	}
 
 	inline list_reference back()
 	{
+		assert(empty() == false);
 		return list_.back();
 	}
 
 	inline const_list_reference back()const
 	{
+		assert(empty() == false);
 		return list_.back();
 	}
 
-	inline bool empty()
+	inline bool empty()const
 	{
-#ifdef _DEBUG
-		if (list_.empty())
-			assert(map_.empty());
-
-		if (list_.empty() == false)
-			assert(map_.empty() == false);
-#endif
+		assert(list_.size()== map_.size());
 		return list_.empty();
 	}
 
@@ -462,10 +462,19 @@ public:
 		list_.clear();
 	}
 
-	inline size_type size()
+	inline size_type size()const
 	{
 		assert(list_.size() == map_.size());
 		return list_.size();
+	}
+
+	void swap(simple_linked_hash_map &other)
+	{
+		if (this == &other)
+			return;
+
+		this->list_.swap(other.list_);
+		this->map_.swap(other.map_);
 	}
 private:
 	list_type list_;

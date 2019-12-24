@@ -51,12 +51,12 @@ public:
 	typedef typename list_type::const_reverse_iterator const_list_reverse_iterator;
 
 	//Consistency with the standard library 与标准库保持一致性
-	typedef list_reference reference;
-	typedef const_list_reference const_reference;
-	typedef list_iterator iterator;
-	typedef const_list_iterator const_iterator;
-	typedef list_reverse_iterator reverse_iterator;
-	typedef const_list_reverse_iterator const_reverse_iterator;
+	typedef typename list_reference reference;
+	typedef typename const_list_reference const_reference;
+	typedef typename list_iterator iterator;
+	typedef typename const_list_iterator const_iterator;
+	typedef typename list_reverse_iterator reverse_iterator;
+	typedef typename const_list_reverse_iterator const_reverse_iterator;
 private:
 	//typedef typename std::pair<const key_type, list_iterator> map_value_type; //map_的元素类型 (list的迭代器不会失效)
 	//typedef typename std::allocator<map_value_type> map_allocator_type;

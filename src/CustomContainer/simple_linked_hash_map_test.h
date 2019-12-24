@@ -27,6 +27,9 @@ namespace stdcxx
 #include "simple_linked_hash_map.h"
 namespace simple_linked_hash_map_test
 {
+#ifdef STUDENT_PARAM
+#undef STUDENT_PARAM
+#endif
 #define STUDENT_PARAM(id) id,#id
 	class Student
 	{
