@@ -11,6 +11,11 @@
 #include <memory>
 #include <assert.h>
 
+//#define SHARED_PTR_ENABLE_BOOST
+#ifdef SHARED_PTR_ENABLE_BOOST
+#include <boost/shared_ptr.hpp>
+#endif
+
 /***
 * @brief:要求 类型 _Ty 成员函数 key()
 ***/
@@ -22,6 +27,30 @@ struct default_obtain_key_func_of_priority_linked_hash_map
 		return l.key();
 	}
 };
+
+//模板特例化:std智能指针的偏特化
+template<class _Kty, class _Ty>
+struct default_obtain_key_func_of_priority_linked_hash_map< _Kty, std::shared_ptr<_Ty> >
+{
+	inline const _Kty &operator()(const std::shared_ptr<_Ty>& sp)
+	{
+		assert(sp);
+		return sp->key();
+	}
+};
+
+#ifdef SHARED_PTR_ENABLE_BOOST
+//模板特例化:boost智能指针的偏特化
+template<class _Kty, class _Ty>
+struct default_obtain_key_func_of_priority_linked_hash_map< _Kty, boost::shared_ptr<_Ty> >
+{
+	inline const _Kty &operator()(const boost::shared_ptr<_Ty>& sp)
+	{
+		BOOST_ASSERT(sp);
+		return sp->key();
+	}
+};
+#endif
 
 template<class _Kty,
 	class _Ty,
@@ -95,8 +124,6 @@ private:
 	**/
 	list_iterator _Push(const list_value_type &val, const priority_type &priority, bool bCover, bool bPushback, bool &bExisted)
 	{
-		assert(_Where._Getcont() == &list_); //检查迭代器是否失效了,借鉴 list的insert,判断迭代器是否失效
-
 		//这里是关键所在
 		static obtain_key_func obtain_key; //避免重复构造
 		const key_type &k = obtain_key(val);
@@ -155,11 +182,10 @@ private:
 			{
 				auto rtn = priority_map_.insert(priority_map_value_type(priority, list_type()));
 				assert(rtn.second);
-				pList = &(rtn.first.second);
-
+				pList = &(rtn.first->second);
 			}
 			assert(pList);
-			list_iterator listItr = list_.end();
+			list_iterator listItr = pList->end();
 			if (bPushback)
 			{
 				pList->push_back(val);
@@ -171,7 +197,7 @@ private:
 				listItr = pList->begin();
 
 			}
-			hash_map_.insert(k, listItr);
+			hash_map_.insert(hash_map_value_type(k, listItr));
 			assert(listItr != pList->end());
 
 			std::cout << __FUNCTION__ << "[key:" << k << "] is not existed!!!" << std::endl;
@@ -181,24 +207,24 @@ private:
 
 public:
 	//**************************************************************************************************
-	inline void push_back(const list_value_type &val, const priority_type &priority, bool &bExisted)
+	inline void push_back(const priority_type &priority, const list_value_type &val, bool &bExisted)
 	{
 		_Push(val, priority, _IsConvered, true, bExisted);
 	}
 
-	inline void push_back(const list_value_type &val)
+	inline void push_back(const priority_type &priority, const list_value_type &val)
 	{
 		bool bExisted = false;
 		_Push(val, priority, _IsConvered, true, bExisted);
 	}
 
 	//**************************************************************************************************
-	inline void push_front(const list_value_type &val, const priority_type &priority, bool &bExisted)
+	inline void push_front(const priority_type &priority, const list_value_type &val, bool &bExisted)
 	{
 		_Push(val, priority, _IsConvered, false, bExisted);
 	}
 
-	inline void push_front(const list_value_type &val)
+	inline void push_front(const priority_type &priority, const list_value_type &val)
 	{
 		bool bExisted = false;
 		_Push(val, priority, _IsConvered, false, bExisted);

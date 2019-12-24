@@ -87,14 +87,47 @@ namespace priority_linked_hash_map_test
 	class test_case
 	{
 	private:
+		static void show(const Student&obj)
+		{
+			cout << obj << endl;
+		}
+
 		static void test1()
 		{
-			priority_linked_hash_map<> linked
+			bool bExisted = false;
+			priority_linked_hash_map<int, Student> linked;
+			linked.push_back(1, Student(STUDENT_PARAM(11)));
+			linked.push_back(1, Student(STUDENT_PARAM(12)));
+			linked.push_back(1, Student(STUDENT_PARAM(13)), bExisted);
+			linked.push_back(1, Student(STUDENT_PARAM(13)), bExisted);
+
+			linked.push_back(0, Student(STUDENT_PARAM(1)));
+			linked.push_back(0, Student(STUDENT_PARAM(2)));
+			linked.push_back(0, Student(STUDENT_PARAM(3)), bExisted);
+			linked.push_back(0, Student(STUDENT_PARAM(3)), bExisted);
+
+
+			linked.push_back(2, Student(STUDENT_PARAM(21)));
+			linked.push_back(2, Student(STUDENT_PARAM(22)));
+			linked.push_back(2, Student(STUDENT_PARAM(23)), bExisted);
+			linked.push_back(2, Student(STUDENT_PARAM(23)), bExisted);
+
+			cout << __FUNCTION__ << "*************************************************************************" << endl;
+			linked.traverse(show);
+			cout << __FUNCTION__ << "*************************************************************************" << endl;
+			linked.traverse_reverse(show);
 		}
+
+		static void test2()
+		{
+
+		}
+
 	public:
 		static void test_all()
 		{
-
+			test1();
+			test2();
 		}
 	};
 }
