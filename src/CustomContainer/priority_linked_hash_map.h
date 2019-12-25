@@ -165,36 +165,31 @@ private:
 		hash_map_iterator hashMapItr = hash_map_.find(k);
 		if (hashMapItr != hash_map_.end())
 		{
-#ifdef _DEBUG
-			//检查
-			bool bFind = false;
-			for (priority_map_iterator priorityMapItr = priority_map_.begin(); priorityMapItr != priority_map_.end(); ++priorityMapItr)
-			{
-				const list_type &l = priorityMapItr->second;
-				for (const_list_iterator listItr = l.cbegin(); listItr != l.cend(); ++listItr)
-				{
-					if (k == obtain_key_(*listItr))
-					{
-						bFind = true;
-						assert(hashMapItr->second == listItr);
-						break;
-					}
-				}
-
-				if (bFind)
-					break;
-			}
-			assert(bFind);
-#endif
-
 			bExisted = true;
 			if (bCover)
 			{
-				list_iterator listItr = hashMapItr->second;
-				*listItr = val; //调用list_value_type的赋值构造函数
+				//方案一： 原位置覆盖
+				//list_iterator listItr = hashMapItr->second;
+				//*listItr = val; //调用list_value_type的赋值构造函数
+
+				//方案二：删除原来的，然后再push [这种更符合 "按照添加的顺序"的语义]
+				list_iterator oldListItr = hashMapItr->second;
+				list_type *pList = _GetListPtr(oldListItr);
+				assert(pList && oldListItr != pList->end());
+
+				//1.删除旧元素
+				pList->erase(oldListItr);
+				//2.插入新元素
+				list_iterator newListItr;
+				if (bPushback)
+					newListItr = pList->insert(pList->end(), val);
+				else
+					newListItr = pList->insert(pList->begin(), val);
+
+				hashMapItr->second = newListItr;            //保存新的迭代器
 
 				std::cout << "_Push [key:" << k << "] is existed, be covered!!!" << std::endl;
-				return listItr;
+				return newListItr;
 			}
 			else
 			{

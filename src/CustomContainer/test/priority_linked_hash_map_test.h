@@ -127,13 +127,14 @@ namespace priority_linked_hash_map_test
 			linked.push_back(0, Student(STUDENT_PARAM(1)));
 			linked.push_back(0, Student(STUDENT_PARAM(2)));
 			linked.push_back(0, Student(STUDENT_PARAM(3)), bExisted);
-			linked.push_back(0, Student(STUDENT_PARAM(3 * 1)), bExisted);
+			linked.push_back(0, Student(STUDENT_PARAM(1 * 1)), bExisted);
 
 			linked.push_back(2, Student(STUDENT_PARAM(20)));
 			linked.push_back(2, Student(STUDENT_PARAM(21)));
 			linked.push_back(2, Student(STUDENT_PARAM(22)));
 			linked.push_back(2, Student(STUDENT_PARAM(23)), bExisted);
 			linked.push_back(2, Student(STUDENT_PARAM(23 + 0)), bExisted);
+			linked.push_back(2, Student(STUDENT_PARAM(21 + 0)), bExisted);
 
 			cout << __FUNCTION__ << "*************************************************************************" << endl;
 			cout << "size:" << linked.size() << endl;
@@ -351,7 +352,7 @@ namespace priority_linked_hash_map_test
 		static void test_all()
 		{
 			test1();
-			test2();
+			//test2();
 		}
 	};
 }
