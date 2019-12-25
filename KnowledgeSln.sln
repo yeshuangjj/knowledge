@@ -27,9 +27,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomContainer", "CustomContainer", "{EAD1AD7B-6050-4AB8-8E7C-7F229A0F4D5E}"
 	ProjectSection(SolutionItems) = preProject
 		src\CustomContainer\linked_hash_map.h = src\CustomContainer\linked_hash_map.h
+		src\CustomContainer\linked_hash_map_deprecated.h = src\CustomContainer\linked_hash_map_deprecated.h
 		src\CustomContainer\linked_hash_map_helper.h = src\CustomContainer\linked_hash_map_helper.h
 		src\CustomContainer\priority_linked_hash_map.h = src\CustomContainer\priority_linked_hash_map.h
-		src\CustomContainer\simple_linked_hash_map.h = src\CustomContainer\simple_linked_hash_map.h
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2D9C9FF8-6EBC-43F4-A7F4-3BA10D114758}"
@@ -37,7 +37,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2D9C9FF8-6
 		src\CustomContainer\test\linked_hash_map_copy.h = src\CustomContainer\test\linked_hash_map_copy.h
 		src\CustomContainer\test\linked_hash_map_test.h = src\CustomContainer\test\linked_hash_map_test.h
 		src\CustomContainer\test\priority_linked_hash_map_test.h = src\CustomContainer\test\priority_linked_hash_map_test.h
-		src\CustomContainer\test\simple_linked_hash_map_test.h = src\CustomContainer\test\simple_linked_hash_map_test.h
 		src\CustomContainer\test\test_.h = src\CustomContainer\test\test_.h
 		src\CustomContainer\test\try_copy.h = src\CustomContainer\test\try_copy.h
 	EndProjectSection
