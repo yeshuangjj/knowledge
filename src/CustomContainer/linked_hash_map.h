@@ -60,7 +60,7 @@
 template<class _Kty,
 	class _Ty,
 	class _ObtainKeyFunc = default_obtain_key_func_of_linked_hash_map<_Kty, _Ty>,  // 函数或仿函数
-	bool _IsAllowCover = false,                                                   // when key is existed,do nothing if _IsAllowCover is false; covered if _IsAllowCover is true
+	bool _IsAllowCover = false,                                                    // when key is existed,do nothing if _IsAllowCover is false; covered if _IsAllowCover is true
 	class _Hasher = std::hash<_Kty>,
 	class _Keyeq = std::equal_to<_Kty>
 >
@@ -124,26 +124,11 @@ private:
 			bExisted = true;
 			if (bCover)
 			{
-				//方案一：
 				//必须先调用list_.insert(_Where, val) ,然后再条用 list_.erase(mapItr->second)
 				//原因：_Where 和 mapItr->second是同一个元素的迭代器 可能是同一迭代器。如果是同一元素的迭代器，先erase(mapItr->second)会导致 _Where失效，从而导致insert崩溃
 				listItr = list_.insert(_Where, val); //插入新元素
 				list_.erase(mapItr->second);         //删除旧元素
 				mapItr->second = listItr;            //保存新的迭代器
-
-				//方案二：
-				//if (_Where == mapItr->second)
-				//{ //如果 _Where 和 mapItr->second是同一个元素的迭代器 [特别需要注意]
-				//	const mapped_type *p = &(_Where->second);
-				//	const_cast<mapped_type*>(p)->operator=(val.second);//调用mapped_type的赋值构造函数
-				//	//const_cast<mapped_type*>(&(_Where->second))->operator=(val.second); //调用mapped_type的赋值构造函数
-				//}
-				//else
-				//{
-				//	listItr = list_.insert(_Where, val);
-				//	list_.erase(mapItr->second);					
-				//	mapItr->second = listItr;
-				//}
 
 				std::cout << __FUNCTION__ << "[key:" << k << "] is existed, be covered!!!" << std::endl;
 			}

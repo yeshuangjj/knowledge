@@ -63,9 +63,9 @@ if user call function find_elem, _Ty need have default construct func [Èç¹ûÓÃ»§µ
 template<class _Kty,
 	class _Ty,
 	class _ObtainKeyFunc = default_obtain_key_func_of_linked_hash_map<_Kty, _Ty>,  // º¯Êý»ò·Âº¯Êý
-	bool _IsAllowCover = false,                   // when key is existed,do nothing if _IsAllowCover is false; covered if _IsAllowCover is true
+	bool _IsAllowCover = false,                                                    // when key is existed,do nothing if _IsAllowCover is false; covered if _IsAllowCover is true
 	class _Priority = std::size_t,
-	class _PriorityPr = std::less< _Priority >, // priority comparator predicate type
+	class _PriorityPr = std::less< _Priority >,                                    // priority comparator predicate type
 	class _Hasher = std::hash<_Kty>,
 	class _Keyeq = std::equal_to<_Kty>
 >
