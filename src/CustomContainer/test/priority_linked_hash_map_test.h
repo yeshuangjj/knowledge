@@ -297,26 +297,24 @@ namespace priority_linked_hash_map_test
 				const_ref.traverse_reverse(showPtr);
 
 				//find
-				do
+				cout << __FUNCTION__ << "**find const***********************************************************************" << endl;
+				auto pFind = const_ref.find(3);
+				if (pFind)
 				{
-					cout << __FUNCTION__ << "**find const***********************************************************************" << endl;
-					auto pFind = const_ref.find(3);
-					if (pFind)
-					{
-						cout << *pFind << endl;
-					}
-					pFind = const_ref.find(99);
-					assert(pFind == nullptr);
+					cout << *pFind << endl;
+				}
+				pFind = const_ref.find(99);
+				assert(pFind == nullptr);
 
 
-					Student_sptr spStudent;
-					if (const_ref.find_elem(3, spStudent))
-						cout << spStudent << endl;
+				Student_sptr spStudent;
+				if (const_ref.find_elem(3, spStudent))
+					cout << spStudent << endl;
 
-					Student_sptr spStudent1;
-					if (const_ref.find_elem(99, spStudent1))
-						cout << spStudent << endl;
-				} while (false);
+				Student_sptr spStudent1;
+				if (const_ref.find_elem(99, spStudent1))
+					cout << spStudent << endl;
+
 			} while (false);
 
 			otherLinked.clear();
