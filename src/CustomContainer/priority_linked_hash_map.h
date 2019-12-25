@@ -11,6 +11,51 @@
 #include <assert.h>
 #include "linked_hash_map_helper.h"
 
+/***
+*例子：
+*	class Student
+*	{
+*	public:
+*       Student(int id) :id_(-1){}
+*		Student(int id, const std::string &name) :id_(id), name_(name) {}
+*		inline const int &id()const { return id_; }
+*		const std::string &name()const { return  name_; }
+*		inline const int &key()const { return id_; }
+*	private:
+*		int id_;
+*		std::string name_;
+*	};
+*	typedef std::shared_ptr<Student> Student_sptr;
+*
+*	struct ObtainKeyOfStudent
+*	{
+*		inline const int& operator()(const Student&l)const
+*		{
+*			return l.id();
+*		}
+*	};
+*
+*	struct ObtainKeyOfStudentPtr
+*	{
+*		inline const int& operator()(const Student_sptr& sp)const
+*		{
+*			assert(sp);
+*			return sp->id();
+*		}
+*	};
+*
+*	void example()
+*	{
+*		//如果Student 没有成员函数key(),必须自定义 一个"函数或仿函数"，来获取 key值
+*		priority_linked_hash_map<int, Student, ObtainKeyOfStudent> linked1;
+*		priority_linked_hash_map<int, Student_sptr, ObtainKeyOfStudentPtr> linked2;
+*
+*		//如果Student 有成员函数key(),使用默认值default_obtain_key_func_of_linked_hash_map<K,V>
+*		priority_linked_hash_map<int, Student> linked3;
+*		priority_linked_hash_map<int, Student_sptr, default_obtain_key_func_of_linked_hash_map<int, Student_sptr>> linked4; //使用偏特化的模板
+*	}
+****/
+
 /*
 if user call function find_elem, _Ty need have default construct func [如果用户调用函数 find_elem,类型 _Ty 必须有默认的构造函数]
 */

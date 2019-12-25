@@ -351,7 +351,7 @@ namespace priority_linked_hash_map_test
 		static void test_all()
 		{
 			test1();
-			//test2();
+			test2();
 		}
 	};
 }
