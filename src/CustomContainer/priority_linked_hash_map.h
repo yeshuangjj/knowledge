@@ -8,53 +8,12 @@
 #include <list>
 #include <map>
 #include <unordered_map>
-#include <memory>
 #include <assert.h>
-
-//#define SHARED_PTR_ENABLE_BOOST
-#ifdef SHARED_PTR_ENABLE_BOOST
-#include <boost/shared_ptr.hpp>
-#endif
-
-/***
-* @brief:要求 类型 _Ty 成员函数 key()
-***/
-template<class _Kty, class _Ty>
-struct default_obtain_key_func_of_priority_linked_hash_map
-{
-	inline const _Kty &operator()(const _Ty& l)
-	{
-		return l.key();
-	}
-};
-
-//模板特例化:std智能指针的偏特化
-template<class _Kty, class _Ty>
-struct default_obtain_key_func_of_priority_linked_hash_map< _Kty, std::shared_ptr<_Ty> >
-{
-	inline const _Kty &operator()(const std::shared_ptr<_Ty>& sp)
-	{
-		assert(sp);
-		return sp->key();
-	}
-};
-
-#ifdef SHARED_PTR_ENABLE_BOOST
-//模板特例化:boost智能指针的偏特化
-template<class _Kty, class _Ty>
-struct default_obtain_key_func_of_priority_linked_hash_map< _Kty, boost::shared_ptr<_Ty> >
-{
-	inline const _Kty &operator()(const boost::shared_ptr<_Ty>& sp)
-	{
-		BOOST_ASSERT(sp);
-		return sp->key();
-	}
-};
-#endif
+#include "linked_hash_map_helper.h"
 
 template<class _Kty,
 	class _Ty,
-	class _ObtainKeyFunc = default_obtain_key_func_of_priority_linked_hash_map<_Kty, _Ty>,  // 函数或仿函数
+	class _ObtainKeyFunc = default_obtain_key_func_of_linked_hash_map<_Kty, _Ty>,  // 函数或仿函数
 	bool _IsConvered = false,                   // when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
 	class _Priority = std::size_t,
 	class _PriorityPr = std::less< _Priority >, // priority comparator predicate type
@@ -117,6 +76,24 @@ public:
 	priority_linked_hash_map(const priority_linked_hash_map&) = delete;
 	priority_linked_hash_map& operator=(const priority_linked_hash_map&) = delete;
 private:
+#ifdef _DEBUG
+	void _CheckCount()const
+	{
+#define _USE_DEBUG_CHECK
+#ifdef _USE_DEBUG_CHECK
+		int count = 0;
+		for (const_priority_map_iterator priorityMapItr = priority_map_.cbegin(); priorityMapItr != priority_map_.cend(); ++priorityMapItr)
+		{
+			const list_type &l = priorityMapItr->second;
+			count += l.size();
+		}
+		assert(count == hash_map_.size());
+#endif
+	}
+#else
+	inline void _CheckCount()const {}
+#endif
+
 	/**
 	* @brief:core of algorithm.
 	* @param:
@@ -124,9 +101,7 @@ private:
 	**/
 	list_iterator _Push(const list_value_type &val, const priority_type &priority, bool bCover, bool bPushback, bool &bExisted)
 	{
-		//这里是关键所在
-		static obtain_key_func obtain_key; //避免重复构造
-		const key_type &k = obtain_key(val);
+		const key_type &k = obtain_key_(val);
 
 		//判断k是否存在
 		hash_map_iterator hashMapItr = hash_map_.find(k);
@@ -140,13 +115,16 @@ private:
 				const list_type &l = priorityMapItr->second;
 				for (const_list_iterator listItr = l.cbegin(); listItr != l.cend(); ++listItr)
 				{
-					if (k == obtain_key(*listItr))
+					if (k == obtain_key_(*listItr))
 					{
 						bFind = true;
 						assert(hashMapItr->second == listItr);
+						break;
 					}
-
 				}
+
+				if (bFind)
+					break;
 			}
 			assert(bFind);
 #endif
@@ -157,13 +135,12 @@ private:
 				list_iterator listItr = hashMapItr->second;
 				*listItr = val; //调用list_value_type的赋值构造函数
 
-				std::cout << __FUNCTION__ << "[key:" << k << "] is existed, be covered!!!" << std::endl;
-
+				std::cout << "_Push [key:" << k << "] is existed, be covered!!!" << std::endl;
 				return listItr;
 			}
 			else
 			{
-				std::cout << __FUNCTION__ << "[key:" << k << "] is existed, do nothing!!!" << std::endl;
+				std::cout << "_Push [key:" << k << "] is existed, do nothing!!!" << std::endl;
 				return hashMapItr->second;
 			}
 		}
@@ -200,7 +177,11 @@ private:
 			hash_map_.insert(hash_map_value_type(k, listItr));
 			assert(listItr != pList->end());
 
-			std::cout << __FUNCTION__ << "[key:" << k << "] is not existed!!!" << std::endl;
+			std::cout <<"_Push [key:" << k << "] is not existed!!!" << std::endl;
+
+#ifdef _DEBUG
+			_CheckCount();
+#endif
 			return listItr;
 		}
 	}
@@ -249,33 +230,109 @@ public:
 		return nullptr;
 	}
 
-private:
-	void _Pop(bool bPopFront)
+	/*
+	*@brief: if list_value_type is shared_ptr,find_elem is good choice!
+	*@return:if true,find ; if false,not find
+	*/
+	bool find_elem(const key_type &k, list_value_type &list_value)
 	{
+		hash_map_iterator hashMapItr = hash_map_.find(k);
+		if (hashMapItr != hash_map_.end())
+		{
+			list_value = (*(hashMapItr->second)); //copy
+			return true;
+		}
+		else
+		{
+			list_value = list_value_type();
+			return false;
+		}
+	}
+
+	bool find_elem(const key_type &k, list_value_type &list_value)const
+	{
+		const_hash_map_iterator hashMapItr = hash_map_.find(k);
+		if (hashMapItr != hash_map_.end())
+		{
+			list_value = (*(hashMapItr->second)); //copy
+			return true;
+		}
+		else
+		{
+			list_value = list_value_type();
+			return false;
+		}
+	}
+
+	//**************************************************************************************************
+	inline void pop_front()
+	{//删除保持一致性
 		if (empty() == false)
 		{
 			for (priority_map_iterator priorityMapItr = priority_map_.begin(); priorityMapItr != priority_map_.end(); ++priorityMapItr)
 			{
 				list_type &l = priorityMapItr->second;
-				if (bPopFront)
+				if (l.empty() == false)
+				{
+					//1.删除 hash_map_中相应的元素 
+					list_iterator listItr = l.begin();
+
+					const key_type &k = obtain_key_(*listItr);
+					hash_map_iterator hashMapItr = hash_map_.find(k);
+					assert(hashMapItr != hash_map_.end() && hashMapItr->second == listItr);
+					hash_map_.erase(hashMapItr);
+					//2.删除list中的元素
 					l.pop_front();
-				else
-					l.pop_back();
+
+#ifdef _DEBUG
+					_CheckCount();
+#endif
+					return;
+				}
 			}
 		}
 	}
-public:
-	inline void pop_front()
-	{
-		_Pop(true);
-	}
 
 	inline void pop_back()
-	{
-		_Pop(false);
+	{//删除保持一致性
+		assert(empty() == false);
+		if (empty() == false)
+		{
+			//逆序遍历
+			for (priority_map_reverse_iterator priorityMapItr = priority_map_.rbegin(); priorityMapItr != priority_map_.rend(); ++priorityMapItr)
+			{
+				list_type &l = priorityMapItr->second;
+				if (l.empty() == false)
+				{
+					//1.删除 hash_map_中相应的元素 
+					list_iterator listItr = (--l.end());
+					const key_type &k = obtain_key_(*listItr);
+					hash_map_iterator hashMapItr = hash_map_.find(k);
+					assert(hashMapItr != hash_map_.end() && hashMapItr->second == listItr);
+					hash_map_.erase(hashMapItr);
+
+					//2.删除list中的元素
+					l.pop_back();
+
+#ifdef _DEBUG
+					_CheckCount();
+#endif
+					return;
+				}
+			}
+		}
 	}
 
 	//**************************************************************************************************
+	/**
+		if(empty()==false)
+		{
+			front();
+			back();
+			pop_front();
+			pop_back();
+		}
+	*/
 	inline list_reference front()
 	{
 		assert(empty() == false);
@@ -285,17 +342,27 @@ public:
 			if (l.empty() == false)
 				return l.front();
 		}
+
+		//never execute this step,note:for avoid warning
+		assert(false);
+		static list_value_type temp;
+		return temp;
 	}
 
 	inline const_list_reference front()const
 	{
 		assert(empty() == false);
-		for (priority_map_iterator priorityMapItr = priority_map_.begin(); priorityMapItr != priority_map_.end(); ++priorityMapItr)
+		for (const_priority_map_iterator priorityMapItr = priority_map_.cbegin(); priorityMapItr != priority_map_.cend(); ++priorityMapItr)
 		{
-			list_type &l = priorityMapItr->second;
+			const list_type &l = priorityMapItr->second;
 			if (l.empty() == false)
 				return l.front();
 		}
+
+		//never execute this step,note:for avoid warning
+		assert(false);
+		static list_value_type temp;
+		return temp;
 	}
 
 	inline list_reference back()
@@ -307,36 +374,65 @@ public:
 			if (l.empty() == false)
 				return l.back();
 		}
+
+		//never execute this step,note:for avoid warning
+		assert(false);
+		static list_value_type temp;
+		return temp;
 	}
 
 	inline const_list_reference back()const
 	{
 		assert(empty() == false);
-		for (priority_map_reverse_iterator priorityMapItr = priority_map_.rbegin(); priorityMapItr != priority_map_.rend(); ++priorityMapItr)
+		for (const_priority_map_reverse_iterator priorityMapItr = priority_map_.crbegin(); priorityMapItr != priority_map_.crend(); ++priorityMapItr)
 		{
-			list_type &l = priorityMapItr->second;
+			const list_type &l = priorityMapItr->second;
 			if (l.empty() == false)
 				return l.back();
 		}
+
+		//never execute this step,note:for avoid warning
+		assert(false);
+		static list_value_type temp;
+		return temp;
 	}
 	//**************************************************************************************************
 	void clear()
-	{
+	{//清理保持一致性
 		hash_map_.clear();
 		priority_map_.clear();
 	}
 
+	//this function cost performance [耗费性能]
+	void clear(const priority_type &priority)
+	{//清理保持一致性		
+		priority_map_iterator priorityMapItr = priority_map_.find(priority);
+		if (priorityMapItr != priority_map_.end())
+		{
+			//1.清理hash_map_
+			list_type &l = priorityMapItr->second;
+			for (list_iterator listItr = l.begin(); listItr != l.end(); ++listItr)
+			{
+				const key_type &k = obtain_key_(*listItr);
+				hash_map_iterator hashMapItr = hash_map_.find(k);
+				assert(hashMapItr != hash_map_.end() && hashMapItr->second == listItr); //if assert false,need check logic
+				hash_map_.erase(hashMapItr);
+			}
+			//2.清理priority_map_
+			priority_map_.erase(priorityMapItr);
+		}
+
+#ifdef _DEBUG
+		_CheckCount();
+#endif
+	}
+
+public:
+
 	inline size_type size()const
 	{
 #ifdef _DEBUG
-		int count = 0;
-		for (const_priority_map_iterator priorityMapItr = priority_map_.cbegin(); priorityMapItr != priority_map_.cend(); ++priorityMapItr)
-		{
-			const list_type &l = priorityMapItr->second;
-			for (const_list_iterator listItr = l.cbegin(); listItr != l.cend(); ++listItr)
-				++count;
-		}
-		assert(count == hash_map_.size());
+		_CheckCount();
 #endif
 		return hash_map_.size();
 	}
@@ -344,14 +440,7 @@ public:
 	bool empty()const
 	{
 #ifdef _DEBUG
-		int count = 0;
-		for (const_priority_map_iterator priorityMapItr = priority_map_.cbegin(); priorityMapItr != priority_map_.cend(); ++priorityMapItr)
-		{
-			const list_type &l = priorityMapItr->second;
-			for (const_list_iterator listItr = l.cbegin(); listItr != l.cend(); ++listItr)
-				++count;
-		}
-		assert(count == hash_map_.size());
+		_CheckCount();
 #endif
 		return hash_map_.empty();
 	}
@@ -390,6 +479,7 @@ public:
 	}
 
 private:
+	obtain_key_func   obtain_key_;
 	priority_map_type priority_map_;  //std::map< priority_type, list_type, priority_compare>
 	hash_map_type     hash_map_;
 };

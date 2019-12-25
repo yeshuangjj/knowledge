@@ -10,18 +10,15 @@
 #include <unordered_map>
 #include <list>
 #include <assert.h>
-#include <memory>
-
-//#define SHARED_PTR_ENABLE_BOOST
-#ifdef SHARED_PTR_ENABLE_BOOST
-#include <boost/shared_ptr.hpp>
-#endif
+#include "linked_hash_map_helper.h"
 
 /***
 *例子：
 *	class Student
 *	{
 *	public:
+*       Student(int id) :id_(-1){}
+*		Student(int id, const std::string &name) :id_(id), name_(name) {}
 *		inline const int &id()const { return id_; }
 *		const std::string &name()const { return  name_; }
 *		inline const int &key()const { return id_; }
@@ -54,51 +51,15 @@
 *		simple_linked_hash_map<int, Student, ObtainKeyOfStudent> linked1;
 *		simple_linked_hash_map<int, Student_sptr, ObtainKeyOfStudentPtr> linked2;
 *
-*		//如果Student 有成员函数key(),使用默认值default_obtain_key_func_of_simple_linked_hash_map<K,V>
+*		//如果Student 有成员函数key(),使用默认值default_obtain_key_func_of_linked_hash_map<K,V>
 *		simple_linked_hash_map<int, Student> linked3;
-*		simple_linked_hash_map<int, Student_sptr, default_obtain_key_func_of_simple_linked_hash_map<int, Student_sptr>> linked4; //使用偏特化的模板
+*		simple_linked_hash_map<int, Student_sptr, default_obtain_key_func_of_linked_hash_map<int, Student_sptr>> linked4; //使用偏特化的模板
 *	}
 ****/
 
-/***
-* @brief:要求 类型 _Ty 成员函数 key()
-***/
-template<class _Kty, class _Ty>
-struct default_obtain_key_func_of_simple_linked_hash_map
-{
-	inline const _Kty &operator()(const _Ty& l)
-	{
-		return l.key();
-	}
-};
-
-//模板特例化:std智能指针的偏特化
-template<class _Kty, class _Ty>
-struct default_obtain_key_func_of_simple_linked_hash_map< _Kty, std::shared_ptr<_Ty> >
-{
-	inline const _Kty &operator()(const std::shared_ptr<_Ty>& sp)
-	{
-		assert(sp);
-		return sp->key();
-	}
-};
-
-#ifdef SHARED_PTR_ENABLE_BOOST
-//模板特例化:boost智能指针的偏特化
-template<class _Kty, class _Ty>
-struct default_obtain_key_func_of_simple_linked_hash_map< _Kty, boost::shared_ptr<_Ty> >
-{
-	inline const _Kty &operator()(const boost::shared_ptr<_Ty>& sp)
-	{
-		BOOST_ASSERT(sp);
-		return sp->key();
-	}
-};
-#endif
-
 template<class _Kty,
 	class _Ty,
-	class _ObtainKeyFunc = default_obtain_key_func_of_simple_linked_hash_map<_Kty, _Ty>,  // 函数或仿函数
+	class _ObtainKeyFunc = default_obtain_key_func_of_linked_hash_map<_Kty, _Ty>,  // 函数或仿函数
 	bool _IsConvered = false,                                                             // when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
 	class _Hasher = std::hash<_Kty>,
 	class _Keyeq = std::equal_to<_Kty>

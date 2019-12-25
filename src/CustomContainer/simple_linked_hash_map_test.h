@@ -134,7 +134,7 @@ namespace simple_linked_hash_map_test
 		// std::shared_ptr
 		static void test2()
 		{
-			simple_linked_hash_map<int, Student_sptr, default_obtain_key_func_of_simple_linked_hash_map<int, Student_sptr>> linked;
+			simple_linked_hash_map<int, Student_sptr, default_obtain_key_func_of_linked_hash_map<int, Student_sptr>> linked;
 			linked.push_back(stdcxx::make_shared<Student>(STUDENT_PARAM(1)));
 			linked.push_back(stdcxx::make_shared<Student>(STUDENT_PARAM(2)));
 			linked.push_back(stdcxx::make_shared<Student>(STUDENT_PARAM(3)));

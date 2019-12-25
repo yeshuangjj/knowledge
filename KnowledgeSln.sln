@@ -27,6 +27,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomContainer", "CustomContainer", "{EAD1AD7B-6050-4AB8-8E7C-7F229A0F4D5E}"
 	ProjectSection(SolutionItems) = preProject
 		src\CustomContainer\linked_hash_map.h = src\CustomContainer\linked_hash_map.h
+		src\CustomContainer\linked_hash_map_helper.h = src\CustomContainer\linked_hash_map_helper.h
 		src\CustomContainer\linked_hash_map_test.h = src\CustomContainer\linked_hash_map_test.h
 		src\CustomContainer\priority_linked_hash_map.h = src\CustomContainer\priority_linked_hash_map.h
 		src\CustomContainer\priority_linked_hash_map_test.h = src\CustomContainer\priority_linked_hash_map_test.h
@@ -36,6 +37,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomContainer", "CustomCo
 		src\CustomContainer\try_copy.h = src\CustomContainer\try_copy.h
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2D9C9FF8-6EBC-43F4-A7F4-3BA10D114758}"
+EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -44,6 +47,7 @@ Global
 		{92AA2951-09D4-47C4-88B5-1685A832D465} = {E62F9E5D-F620-4723-8704-48CA34161506}
 		{107CEA2F-E36F-4038-8014-5A3B8AD5C3E3} = {E62F9E5D-F620-4723-8704-48CA34161506}
 		{EAD1AD7B-6050-4AB8-8E7C-7F229A0F4D5E} = {E62F9E5D-F620-4723-8704-48CA34161506}
+		{2D9C9FF8-6EBC-43F4-A7F4-3BA10D114758} = {EAD1AD7B-6050-4AB8-8E7C-7F229A0F4D5E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5ED1E782-F67E-44E8-8FAD-810A49BB512B}
