@@ -63,7 +63,7 @@ if user call function find_elem, _Ty need have default construct func [Èç¹ûÓÃ»§µ
 template<class _Kty,
 	class _Ty,
 	class _ObtainKeyFunc = default_obtain_key_func_of_linked_hash_map<_Kty, _Ty>,  // º¯Êý»ò·Âº¯Êý
-	bool _IsConvered = false,                   // when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
+	bool _IsAllowCover = false,                   // when key is existed,do nothing if _IsAllowCover is false; covered if _IsAllowCover is true
 	class _Priority = std::size_t,
 	class _PriorityPr = std::less< _Priority >, // priority comparator predicate type
 	class _Hasher = std::hash<_Kty>,
@@ -121,6 +121,8 @@ public:
 
 	priority_linked_hash_map(const priority_linked_hash_map&) = delete;
 	priority_linked_hash_map& operator=(const priority_linked_hash_map&) = delete;
+
+	static bool is_allow_cover() { return _IsAllowConver; }
 private:
 #ifdef _DEBUG
 	void _CheckCount()const
@@ -243,25 +245,25 @@ public:
 	//**************************************************************************************************
 	inline void push_back(const priority_type &priority, const list_value_type &val, bool &bExisted)
 	{
-		_Push(val, priority, _IsConvered, true, bExisted);
+		_Push(val, priority, _IsAllowCover, true, bExisted);
 	}
 
 	inline void push_back(const priority_type &priority, const list_value_type &val)
 	{
 		bool bExisted = false;
-		_Push(val, priority, _IsConvered, true, bExisted);
+		_Push(val, priority, _IsAllowCover, true, bExisted);
 	}
 
 	//**************************************************************************************************
 	inline void push_front(const priority_type &priority, const list_value_type &val, bool &bExisted)
 	{
-		_Push(val, priority, _IsConvered, false, bExisted);
+		_Push(val, priority, _IsAllowCover, false, bExisted);
 	}
 
 	inline void push_front(const priority_type &priority, const list_value_type &val)
 	{
 		bool bExisted = false;
-		_Push(val, priority, _IsConvered, false, bExisted);
+		_Push(val, priority, _IsAllowCover, false, bExisted);
 	}
 
 	//**************************************************************************************************

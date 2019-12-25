@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <iostream>
+
 using std::cout;
 using std::cin;
 using std::endl;
@@ -37,11 +38,28 @@ namespace linked_hash_map_test
 		Student() :id_(-1) {
 			cout << __FUNCTION__ << ":default construct id:" << id_ << "  name:" << name_ << endl;
 		}
+
 		Student(int id, const std::string &name) :id_(id), name_(name) {
 			cout << __FUNCTION__ << ":custom construct id:" << id_ << "  name:" << name_ << endl;
 		}
+
 		~Student() {
 			cout << __FUNCTION__ << ":destroy id:" << id_ << "  name:" << name_ << endl;
+		}
+
+		Student(const Student &other)
+		{
+			this->id_ = other.id_;
+			this->name_ = other.name_;
+			cout << __FUNCTION__ << ":copy construct id:" << id_ << "  name:" << name_ << endl;
+		}
+
+		Student &operator=(const Student &other)
+		{
+			this->id_ = other.id_;
+			this->name_ = other.name_;
+			cout << __FUNCTION__ << ":assign id:" << id_ << "  name:" << name_ << endl;
+			return *this;
 		}
 		inline const int &id()const { return id_; }
 		inline const int &key()const { return id_; }
@@ -88,13 +106,14 @@ namespace linked_hash_map_test
 	private:
 		static void test1()
 		{
+			bool bExisted = false;
 			linked_hash_map<int, Student, ObtainKeyOfStudent> linked;
-			linked.push_back(Student(STUDENT_PARAM(1)));
-			linked.push_back(Student(STUDENT_PARAM(2)));
-			linked.push_back(Student(STUDENT_PARAM(3)));
-			linked.push_back(Student(STUDENT_PARAM(4)));
-			linked.push_back(Student(STUDENT_PARAM(4)));
-			linked.push_back(Student(STUDENT_PARAM(3)));
+			bExisted = linked.push_back(Student(STUDENT_PARAM(1)));
+			bExisted = linked.push_back(Student(STUDENT_PARAM(2)));
+			bExisted = linked.push_back(Student(STUDENT_PARAM(3)));
+			bExisted = linked.push_back(Student(STUDENT_PARAM(4)));
+			bExisted = linked.push_back(Student(STUDENT_PARAM(4)));
+			bExisted = linked.push_back(Student(STUDENT_PARAM(3)));
 
 			for (auto &elem : linked)
 			{

@@ -60,7 +60,7 @@
 template<class _Kty,
 	class _Ty,
 	class _ObtainKeyFunc = default_obtain_key_func_of_linked_hash_map<_Kty, _Ty>,  // 函数或仿函数
-	bool _IsConvered = false,                                                      // when key is existed,do nothing if _IsConvered is false; convered if _IsConvered is true
+	bool _IsAllowCover = false,                                                   // when key is existed,do nothing if _IsAllowCover is false; covered if _IsAllowCover is true
 	class _Hasher = std::hash<_Kty>,
 	class _Keyeq = std::equal_to<_Kty>
 >
@@ -91,11 +91,7 @@ public:
 	typedef typename list_reverse_iterator reverse_iterator;
 	typedef typename const_list_reverse_iterator const_reverse_iterator;
 private:
-	//map_的元素类型 (list的迭代器不会失效)  这里不能使用 std::pair<const key_type, const_list_iterator >,因为find()函数会返回list_iterator
-	//typedef typename std::pair<const key_type, list_iterator > map_value_type;
-	//typedef typename std::allocator<map_value_type> map_allocator_type;
-	//typedef typename std::unordered_map<const key_type, list_iterator, hasher, key_equal, map_allocator_type> hash_map_type;  //使用迭代器，就不用拷贝副本
-	typedef typename std::unordered_map<key_type, list_iterator, hasher, key_equal> hash_map_type;  //使用迭代器，就不用拷贝副本
+	typedef typename std::unordered_map<key_type, list_iterator, hasher, key_equal> hash_map_type;  //使用迭代器，就不用拷贝
 	typedef typename hash_map_type::value_type map_value_type; //实际上就是 std::pair<const key_type, list_iterator >
 	typedef typename hash_map_type::iterator map_iterator;
 	typedef typename hash_map_type::const_iterator const_map_iterator;
@@ -105,6 +101,8 @@ public:
 
 	linked_hash_map(const linked_hash_map&) = delete;
 	linked_hash_map& operator=(const linked_hash_map&) = delete;
+
+	static bool is_allow_cover() { return _IsAllowCover; }
 private:
 	/**
 	* @brief:core of algorithm.
@@ -168,7 +166,7 @@ private:
 public:
 	inline list_iterator insert(const_list_iterator _Where, const list_value_type &val, bool &bExisted)
 	{
-		return _Insert(_Where, val, _IsConvered, bExisted);
+		return _Insert(_Where, val, _IsAllowCover, bExisted);
 	}
 
 	/*if not found key,equal to push_back*/
@@ -187,7 +185,7 @@ public:
 	list_iterator insert(const_list_iterator _Where, const list_value_type &val)
 	{
 		bool bExisted = false;
-		return _Insert(_Where, val, _IsConvered, bExisted);
+		return _Insert(_Where, val, _IsAllowCover, bExisted);
 	}
 
 	list_iterator insert(const key_type &k, const list_value_type &val)
@@ -197,27 +195,29 @@ public:
 	}
 
 	//**************************************************************************************************
-	inline list_iterator push_back(const list_value_type &val, bool &bExisted)
+	inline void push_back(const list_value_type &val, bool &bExisted)
 	{
-		return insert(list_.end(), val, bExisted);
+		insert(list_.end(), val, bExisted);
 	}
 
-	inline list_iterator push_back(const list_value_type &val)
+	inline bool push_back(const list_value_type &val)
 	{
 		bool bExisted = false;
-		return insert(list_.end(), val, bExisted);
+		insert(list_.end(), val, bExisted);
+		return bExisted;
 	}
 
 	//**************************************************************************************************
-	inline list_iterator push_front(const list_value_type &val, bool &bExisted)
+	inline void push_front(const list_value_type &val, bool &bExisted)
 	{
-		return insert(list_.begin(), val, bExisted);
+		insert(list_.begin(), val, bExisted);
 	}
 
-	inline list_iterator push_front(const list_value_type &val)
+	inline bool push_front(const list_value_type &val)
 	{
 		bool bExisted = false;
-		return insert(list_.begin(), val, bExisted);
+		insert(list_.begin(), val, bExisted);
+		return bExisted;
 	}
 
 	//**************************************************************************************************
