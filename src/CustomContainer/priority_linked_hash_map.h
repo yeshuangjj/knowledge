@@ -177,7 +177,7 @@ private:
 			hash_map_.insert(hash_map_value_type(k, listItr));
 			assert(listItr != pList->end());
 
-			std::cout <<"_Push [key:" << k << "] is not existed!!!" << std::endl;
+			std::cout << "_Push [key:" << k << "] is not existed!!!" << std::endl;
 
 #ifdef _DEBUG
 			_CheckCount();
