@@ -214,8 +214,8 @@ private:
 				pList = &(priorityMapItr->second);
 			}
 			else
-			{
-				auto rtn = priority_map_.insert(priority_map_value_type(priority, list_type()));
+			{				 
+				std::pair<priority_map_iterator, bool> rtn = priority_map_.insert(priority_map_value_type(priority, list_type()));
 				assert(rtn.second);
 				pList = &(rtn.first->second);
 			}
