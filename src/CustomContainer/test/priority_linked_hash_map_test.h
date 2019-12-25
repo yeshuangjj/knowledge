@@ -129,12 +129,21 @@ namespace priority_linked_hash_map_test
 			linked.push_back(0, Student(STUDENT_PARAM(3)), bExisted);
 			linked.push_back(0, Student(STUDENT_PARAM(3 * 1)), bExisted);
 
+			linked.push_back(2, Student(STUDENT_PARAM(20)));
 			linked.push_back(2, Student(STUDENT_PARAM(21)));
 			linked.push_back(2, Student(STUDENT_PARAM(22)));
 			linked.push_back(2, Student(STUDENT_PARAM(23)), bExisted);
 			linked.push_back(2, Student(STUDENT_PARAM(23 + 0)), bExisted);
 
 			cout << __FUNCTION__ << "*************************************************************************" << endl;
+			cout << "size:" << linked.size() << endl;
+			cout << "is empty:" << linked.empty() << endl;
+			linked.traverse(show);
+
+			//remove
+			cout << __FUNCTION__ << "**remove***********************************************************************" << endl;
+			bool wasExisted = linked.remove(20);
+			wasExisted = linked.remove(9999);
 			cout << "size:" << linked.size() << endl;
 			cout << "is empty:" << linked.empty() << endl;
 			linked.traverse(show);
@@ -169,6 +178,15 @@ namespace priority_linked_hash_map_test
 				}
 				pFind = linked.find(99);
 				assert(pFind == nullptr);
+
+				Student s;
+				if (linked.find_elem(3, s))
+				{
+					cout << s << endl;
+				}
+
+				assert(linked.find_elem(99999, s) == false);
+
 			} while (false);
 
 
@@ -224,12 +242,21 @@ namespace priority_linked_hash_map_test
 			linked.push_back(0, stdcxx::make_shared<Student>(STUDENT_PARAM(3)), bExisted);
 			linked.push_back(0, stdcxx::make_shared<Student>(STUDENT_PARAM(3 * 1)), bExisted);
 
+			linked.push_back(2, stdcxx::make_shared<Student>(STUDENT_PARAM(20)));
 			linked.push_back(2, stdcxx::make_shared<Student>(STUDENT_PARAM(21)));
 			linked.push_back(2, stdcxx::make_shared<Student>(STUDENT_PARAM(22)));
 			linked.push_back(2, stdcxx::make_shared<Student>(STUDENT_PARAM(23)), bExisted);
 			linked.push_back(2, stdcxx::make_shared<Student>(STUDENT_PARAM(23 * 1)), bExisted);
 
 			cout << __FUNCTION__ << "*************************************************************************" << endl;
+			cout << "size:" << linked.size() << endl;
+			cout << "is empty:" << linked.empty() << endl;
+			linked.traverse(showPtr);
+
+			//remove
+			cout << __FUNCTION__ << "**remove***********************************************************************" << endl;
+			bool wasExisted = linked.remove(20);
+			wasExisted = linked.remove(9999);
 			cout << "size:" << linked.size() << endl;
 			cout << "is empty:" << linked.empty() << endl;
 			linked.traverse(showPtr);
@@ -323,8 +350,8 @@ namespace priority_linked_hash_map_test
 	public:
 		static void test_all()
 		{
-			//test1();
-			test2();
+			test1();
+			//test2();
 		}
 	};
 }

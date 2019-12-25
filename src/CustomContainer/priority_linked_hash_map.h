@@ -11,6 +11,10 @@
 #include <assert.h>
 #include "linked_hash_map_helper.h"
 
+/*
+if user call function find_elem, _Ty need have default construct func [如果用户调用函数 find_elem,类型 _Ty 必须有默认的构造函数]
+*/
+
 template<class _Kty,
 	class _Ty,
 	class _ObtainKeyFunc = default_obtain_key_func_of_linked_hash_map<_Kty, _Ty>,  // 函数或仿函数
@@ -52,11 +56,8 @@ public:
 	//typedef typename const_list_iterator const_iterator;
 	//typedef typename list_reverse_iterator reverse_iterator;
 	//typedef typename const_list_reverse_iterator const_reverse_iterator;
-
+private:
 	//std::unordered_map
-	//typedef typename std::pair<const key_type, list_iterator > hash_map_value_type;
-	//typedef typename std::allocator<hash_map_value_type> hash_map_allocator_type;
-	//typedef typename std::unordered_map<key_type, list_iterator, hasher, hash_key_equal, hash_map_allocator_type> hash_map_type;
 	typedef typename std::unordered_map<key_type, list_iterator, hasher, hash_key_equal> hash_map_type;
 	typedef typename hash_map_type::value_type hash_map_value_type;
 	typedef typename hash_map_type::iterator hash_map_iterator;
@@ -93,6 +94,18 @@ private:
 #else
 	inline void _CheckCount()const {}
 #endif
+
+	/*
+	* @brief:get listPtr by iterator
+	*/
+	list_type *_GetListPtr(list_iterator listItr)
+	{
+		if (listItr._Getcont() == nullptr)
+			return nullptr;
+
+		const list_type* pList = static_cast<const list_type*>(listItr._Getcont());
+		return const_cast<list_type*>(pList);
+	}
 
 	/**
 	* @brief:core of algorithm.
@@ -244,7 +257,7 @@ public:
 		}
 		else
 		{
-			list_value = list_value_type();
+			list_value = list_value_type(); //if call find_elem,must have default constuct func!
 			return false;
 		}
 	}
@@ -259,7 +272,7 @@ public:
 		}
 		else
 		{
-			list_value = list_value_type();
+			list_value = list_value_type(); //if call find_elem,must have default constuct func!
 			return false;
 		}
 	}
@@ -336,66 +349,104 @@ public:
 	inline list_reference front()
 	{
 		assert(empty() == false);
+		list_value_type *pListValue = nullptr;
 		for (priority_map_iterator priorityMapItr = priority_map_.begin(); priorityMapItr != priority_map_.end(); ++priorityMapItr)
 		{
 			list_type &l = priorityMapItr->second;
 			if (l.empty() == false)
-				return l.front();
+			{
+				pListValue = &(l.front());
+				break;
+			}				
 		}
 
-		//never execute this step,note:for avoid warning
-		assert(false);
-		static list_value_type temp;
-		return temp;
+		assert(pListValue);
+		return *pListValue;
 	}
 
 	inline const_list_reference front()const
 	{
 		assert(empty() == false);
+		const list_value_type *pListValue = nullptr;
 		for (const_priority_map_iterator priorityMapItr = priority_map_.cbegin(); priorityMapItr != priority_map_.cend(); ++priorityMapItr)
 		{
 			const list_type &l = priorityMapItr->second;
 			if (l.empty() == false)
-				return l.front();
+			{
+				pListValue = &(l.front());
+				break;
+			}
 		}
-
-		//never execute this step,note:for avoid warning
-		assert(false);
-		static list_value_type temp;
-		return temp;
+		assert(pListValue);
+		return *pListValue;
 	}
 
 	inline list_reference back()
 	{
 		assert(empty() == false);
+		list_value_type *pListValue = nullptr;
 		for (priority_map_reverse_iterator priorityMapItr = priority_map_.rbegin(); priorityMapItr != priority_map_.rend(); ++priorityMapItr)
 		{
 			list_type &l = priorityMapItr->second;
 			if (l.empty() == false)
-				return l.back();
+			{
+				pListValue = &(l.back());
+				break;
+			}
 		}
 
-		//never execute this step,note:for avoid warning
-		assert(false);
-		static list_value_type temp;
-		return temp;
+		assert(pListValue);
+		return *pListValue;
 	}
 
 	inline const_list_reference back()const
 	{
 		assert(empty() == false);
+		const list_value_type *pListValue = nullptr;
 		for (const_priority_map_reverse_iterator priorityMapItr = priority_map_.crbegin(); priorityMapItr != priority_map_.crend(); ++priorityMapItr)
 		{
 			const list_type &l = priorityMapItr->second;
 			if (l.empty() == false)
-				return l.back();
+			{
+				pListValue = &(l.back());
+				break;
+			}
 		}
 
-		//never execute this step,note:for avoid warning
-		assert(false);
-		static list_value_type temp;
-		return temp;
+		assert(pListValue);
+		return *pListValue;
 	}
+
+	//**************************************************************************************************
+	bool remove(const key_type &k)
+	{//清理保持一致性
+		hash_map_iterator hashMapItr = hash_map_.find(k);
+		if (hashMapItr != hash_map_.end())
+		{
+			list_iterator listItr = hashMapItr->second;
+			//通过listItr 获取 list
+			list_type * pList = _GetListPtr(listItr);
+			assert(pList && listItr != pList->end());
+
+			//1.
+			hash_map_.erase(hashMapItr);
+			//2.
+			pList->erase(listItr);
+
+#ifdef _DEBUG
+			_CheckCount();
+#endif
+			return true;
+		}
+
+		return false;
+	}
+
+	inline bool erase(const key_type &k)
+	{
+		return remove(k);
+	}
+
 	//**************************************************************************************************
 	void clear()
 	{//清理保持一致性
@@ -428,7 +479,6 @@ public:
 	}
 
 public:
-
 	inline size_type size()const
 	{
 #ifdef _DEBUG
