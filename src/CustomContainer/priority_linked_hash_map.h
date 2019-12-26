@@ -75,7 +75,7 @@ template<class _Kty,
 >
 class priority_linked_hash_map
 {
-public:	
+public:
 	typedef _Kty key_type;
 	typedef _Ty  list_value_type;
 	typedef list_value_type* list_value_pointer;
@@ -130,10 +130,10 @@ public:
 	friend class Iterator;
 	/*
 	*@brief:如何表示 end ,如何 让 --end()有效
-	*       如何让迭代器不失效  
+	*       如何让迭代器不失效
 	*
 	*
-	*@think:[思考] 1.容器为空时的begin end 
+	*@think:[思考] 1.容器为空时的begin end
 	*              2.容器非空时的begin end
 	*/
 	class Iterator
@@ -147,7 +147,7 @@ public:
 		list_iterator          listItr_;
 		bool 				   endFlag_;
 	public:
-		Iterator() :pContainer_(nullptr), endFlag_(true){}
+		Iterator() :pContainer_(nullptr), endFlag_(true) {}
 
 		Iterator(const Iterator &right)
 		{
@@ -157,6 +157,7 @@ public:
 		Iterator&operator=(const Iterator &right)
 		{
 			_Init(right);
+			return *this;
 		}
 
 	private:
@@ -197,7 +198,7 @@ public:
 		Iterator operator++(int) //itr++
 		{	// postincrement
 			Iterator tempItr = *this;
-			_Increment();		
+			_Increment();
 			return tempItr;
 		}
 
@@ -213,7 +214,7 @@ public:
 			_Decrement();
 			return tempItr;
 		}
-	
+
 		bool operator==(const Iterator &right)const
 		{
 			assert(this->pContainer_ == right.pContainer_);
@@ -241,15 +242,15 @@ public:
 		}
 	private:
 		/*
-		*@brief: 如何表示end : priorityMapItr_ == priority_map_.end() listItr_为最后一个链表的end, 
+		*@brief: 如何表示end : priorityMapItr_ == priority_map_.end() listItr_为最后一个链表的end,
 		*@note： 如果容器是空的呢？begin()本身就是end()
-		*     
+		*
 		*/
 		void _Increment()
 		{
 			assert(pContainer_ && pContainer_->empty() == false && endFlag_ == false);
 
-			list_type * pList = _GetListPtr();
+			list_pointer pList = _GetListPtr();
 			assert(pList && pList->empty() == false);
 
 			if (++listItr_ != pList->end())
@@ -280,20 +281,20 @@ public:
 				if (endFlag_)
 				{	//说明到了end					
 					assert(listItr_ == pList->end());
-					assert(priorityMapItr_== pContainer_->priority_map_.end());
+					assert(priorityMapItr_ == pContainer_->priority_map_.end());
 				}
 			}
 		}
 
 		/*
 		*@brief:考虑 --end()
-		        判别出 --begin(),将此种情况进行 assert(false)
+				判别出 --begin(),将此种情况进行 assert(false)
 		*/
 		void _Decrement()
 		{
 			assert(pContainer_ && pContainer_->empty() == false);//必须确保是有元素的情况下
 
-			list_type * pList = _GetListPtr();
+			list_pointer pList = _GetListPtr();
 			assert(pList);
 			if (endFlag_)
 			{
@@ -363,7 +364,7 @@ public:
 			Iterator itr;
 			itr.pContainer_ = pContainer;
 			if (pContainer->empty())
-			{				
+			{
 				itr.priorityMapItr_ = pContainer->priority_map_.end();
 				itr.endFlag_ = true;
 				assert(itr.listItr_._Getcont() == nullptr);
@@ -402,7 +403,7 @@ public:
 				{
 					itr.listItr_ = priorityMapItr->second.end();
 					break;
-				}			
+				}
 			}
 
 			return itr;
@@ -410,13 +411,13 @@ public:
 
 	private:
 		void _Check()
-		{						
+		{
 			assert(pContainer_ != nullptr);
 			assert(priorityMapItr_._Getcont() != nullptr);
 			assert(listItr_._Getcont() != nullptr);
 		}
 
-		inline list_type *_GetListPtr()
+		inline list_pointer _GetListPtr()
 		{
 			return container_type::_GetStdContainer<list_type, list_iterator>(listItr_);
 		}
@@ -426,7 +427,7 @@ public:
 	typedef typename Iterator iterator;
 	typedef typename list_value_reference reference;
 	typedef typename const_list_value_reference const_reference;
-	
+
 	//没有实现
 	//typedef typename const_list_iterator const_iterator;
 	//typedef typename list_reverse_iterator reverse_iterator;
@@ -461,15 +462,14 @@ private:
 	/*
 	* @brief:get listPtr by iterator
 	*/
-	list_type *_GetListPtr(list_iterator listItr)
+	list_pointer _GetListPtr(list_iterator listItr)
 	{
 		return _GetStdContainer<list_type, list_iterator>(listItr);
+	}
 
-		//if (listItr._Getcont() == nullptr)
-		//	return nullptr;
-
-		//const list_type* pList = static_cast<const list_type*>(listItr._Getcont());
-		//return const_cast<list_type*>(pList);
+	list_pointer _GetListPtr(const_list_iterator listItr)
+	{
+		return _GetStdContainer<list_type, const_list_iterator>(listItr);
 	}
 
 	/**
@@ -494,7 +494,7 @@ private:
 
 				//方案二：删除原来的，然后再push [这种更符合 "按照添加的顺序"的语义]
 				list_iterator oldListItr = hashMapItr->second;
-				list_type *pList = _GetListPtr(oldListItr);
+				list_pointer pList = _GetListPtr(oldListItr);
 				assert(pList && oldListItr != pList->end());
 
 				//1.删除旧元素
@@ -523,7 +523,7 @@ private:
 
 			//查找priority
 			priority_map_iterator priorityMapItr = priority_map_.find(priority);
-			list_type *pList = nullptr;
+			list_pointer pList = nullptr;
 			if (priorityMapItr != priority_map_.end())
 			{
 				pList = &(priorityMapItr->second);
@@ -778,14 +778,14 @@ public:
 	}
 
 	//**************************************************************************************************
-	bool remove(const key_type &k)
+	size_type remove(const key_type &k)
 	{//清理保持一致性
 		hash_map_iterator hashMapItr = hash_map_.find(k);
 		if (hashMapItr != hash_map_.end())
 		{
 			list_iterator listItr = hashMapItr->second;
 			//通过listItr 获取 list
-			list_type * pList = _GetListPtr(listItr);
+			list_pointer pList = _GetListPtr(listItr);
 			assert(pList && listItr != pList->end());
 
 			//1.
@@ -796,15 +796,36 @@ public:
 #ifdef _DEBUG
 			_CheckCount();
 #endif
-			return true;
+			return 1;
 		}
 
-		return false;
+		return 0;
 	}
 
-	inline bool erase(const key_type &k)
+	inline size_type erase(const key_type &k)
 	{
 		return remove(k);
+	}
+
+	iterator erase(iterator itr)
+	{//清理保持一致性
+		assert(itr != end());
+
+		iterator rtnItr = itr; //copy
+		++rtnItr;
+
+		list_pointer pList = _GetListPtr(itr.listItr_);
+		assert(pList && itr.listItr_ != pList->end());
+		//1.
+		const key_type &k = obtain_key_(*(itr.listItr_));
+		hash_map_iterator hashMapItr = hash_map_.find(k);
+		assert(hashMapItr != hash_map_.end());
+		hash_map_.erase(hashMapItr);
+
+		//2.
+		pList->erase(itr.listItr_);//会使得itr.listItr_失效。如果 执行 ++itr，会出问题,所以拷贝一份，执行++
+
+		return rtnItr;
 	}
 
 	//**************************************************************************************************
@@ -847,6 +868,7 @@ public:
 	{
 		return iterator::_End(this);
 	}
+
 public:
 	inline size_type size()const
 	{

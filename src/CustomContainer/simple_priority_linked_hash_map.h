@@ -71,10 +71,10 @@ template<class _Kty,
 >
 class priority_linked_hash_map
 {
-public:	
+public:
 	typedef _Kty key_type;
 	typedef _Ty  list_value_type;
-	typedef list_value_type *list_value_pointer;
+	typedef list_value_type* list_value_pointer;
 
 	//std::map
 	typedef _Priority   priority_type;       //map:key
@@ -148,13 +148,13 @@ private:
 	/*
 	* @brief:get listPtr by iterator
 	*/
-	list_type *_GetListPtr(list_iterator listItr)
+	list_pointer _GetListPtr(list_iterator listItr)
 	{
 		if (listItr._Getcont() == nullptr)
 			return nullptr;
 
-		const list_type* pList = static_cast<const list_type*>(listItr._Getcont());
-		return const_cast<list_type*>(pList);
+		const list_pointer pList = static_cast<const list_pointer>(listItr._Getcont());
+		return const_cast<list_pointer>(pList);
 	}
 
 	/**
@@ -179,7 +179,7 @@ private:
 
 				//方案二：删除原来的，然后再push [这种更符合 "按照添加的顺序"的语义]
 				list_iterator oldListItr = hashMapItr->second;
-				list_type *pList = _GetListPtr(oldListItr);
+				list_pointer pList = _GetListPtr(oldListItr);
 				assert(pList && oldListItr != pList->end());
 
 				//1.删除旧元素
@@ -208,7 +208,7 @@ private:
 
 			//查找priority
 			priority_map_iterator priorityMapItr = priority_map_.find(priority);
-			list_type *pList = nullptr;
+			list_pointer pList = nullptr;
 			if (priorityMapItr != priority_map_.end())
 			{
 				pList = &(priorityMapItr->second);
@@ -470,7 +470,7 @@ public:
 		{
 			list_iterator listItr = hashMapItr->second;
 			//通过listItr 获取 list
-			list_type * pList = _GetListPtr(listItr);
+			list_pointer pList = _GetListPtr(listItr);
 			assert(pList && listItr != pList->end());
 
 			//1.

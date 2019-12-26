@@ -153,6 +153,31 @@ namespace priority_linked_hash_map_test
 			linked.push_back(2, Student(STUDENT_PARAM(22)));
 			linked.push_back(2, Student(STUDENT_PARAM(23)), bExisted);
 
+			const linked_type &const_linked = linked;
+			//for (auto itr = const_linked.begin(); itr != const_linked.end(); ++itr)
+			//{
+			//	cout << (*itr) << endl;
+			//}
+
+			cout << __FUNCTION__ << "**erase 62 52 43***********************************************************************" << endl;
+			for (auto itr = linked.begin(); itr != linked.end();)
+			{
+				cout << (*itr) << endl;
+				if (itr->id() == 62)
+					itr = linked.erase(itr);
+				else if (itr->id() == 52)
+					itr = linked.erase(itr);
+				else if (itr->id() == 43)
+					itr = linked.erase(itr);
+				else
+					++itr;				
+			}
+			cout << "**************" << endl;
+			for (auto itr = linked.begin(); itr != linked.end();++itr)
+			{
+				cout << (*itr) << endl;
+			}
+
 			cout << __FUNCTION__ << "**remove 6***********************************************************************" << endl;
 			linked.remove(61);
 			linked.remove(62);
@@ -219,7 +244,7 @@ namespace priority_linked_hash_map_test
 
 			//remove
 			cout << __FUNCTION__ << "**remove***********************************************************************" << endl;
-			bool wasExisted = linked.remove(20);
+			std::size_t wasExisted = linked.remove(20);
 			wasExisted = linked.remove(9999);
 			cout << "size:" << linked.size() << endl;
 			cout << "is empty:" << linked.empty() << endl;
@@ -332,7 +357,7 @@ namespace priority_linked_hash_map_test
 
 			//remove
 			cout << __FUNCTION__ << "**remove***********************************************************************" << endl;
-			bool wasExisted = linked.remove(20);
+			std::size_t wasExisted = linked.remove(20);
 			wasExisted = linked.remove(9999);
 			cout << "size:" << linked.size() << endl;
 			cout << "is empty:" << linked.empty() << endl;
