@@ -242,3 +242,4 @@ ModelManifest.xml
 .fake/
 /src/CustomContainer/linked_hash_map - 副本.h
 /src/CustomContainer/linked_hash_map_copy.h
+/src/CustomContainer/priority_linked_hash_map__ 不支持迭代器.h

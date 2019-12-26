@@ -20,7 +20,7 @@ pop_front
 pop_back
 swap
 find
-
+shrink_to_fit
 3.普通对象 std智能指针 boost智能指针
 */
 
