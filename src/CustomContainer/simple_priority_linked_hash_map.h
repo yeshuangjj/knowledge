@@ -57,7 +57,8 @@
 ****/
 
 /*
-if user call function find_elem, _Ty need have default construct func [如果用户调用函数 find_elem,类型 _Ty 必须有默认的构造函数]
+*note:if user call function find_elem, _Ty need have default construct func [如果用户调用函数 find_elem,类型 _Ty 必须有默认的构造函数]
+*info: 不支持迭代器遍历
 */
 template<class _Kty,
 	class _Ty,

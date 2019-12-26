@@ -113,11 +113,80 @@ namespace priority_linked_hash_map_test
 			cout << spStudent << endl;
 		}
 
+		//²âÊÔ±éÀú
+		static void test0()
+		{
+			bool bExisted = false;
+			typedef priority_linked_hash_map<int, Student, ObtainKeyOfStudent, false> linked_type;
+			linked_type linked;
+			cout << __FUNCTION__ << "**begin end***********************************************************************" << endl;
+			for (auto itr = linked.begin(); itr != linked.end(); ++itr)
+			{
+				cout << (*itr) << endl;
+			}
+
+			linked.push_back(3, Student(STUDENT_PARAM(31)));
+			linked.push_back(3, Student(STUDENT_PARAM(32)));
+			linked.push_back(3, Student(STUDENT_PARAM(33)), bExisted);
+
+			linked.push_back(1, Student(STUDENT_PARAM(11)));
+			linked.push_back(1, Student(STUDENT_PARAM(12)));
+			linked.push_back(1, Student(STUDENT_PARAM(13)), bExisted);
+
+			linked.push_back(0, Student(STUDENT_PARAM(1)));
+			linked.push_back(0, Student(STUDENT_PARAM(2)));
+			linked.push_back(0, Student(STUDENT_PARAM(3)), bExisted);
+
+			linked.push_back(4, Student(STUDENT_PARAM(41)));
+			linked.push_back(4, Student(STUDENT_PARAM(42)));
+			linked.push_back(4, Student(STUDENT_PARAM(43)), bExisted);
+
+			linked.push_back(5, Student(STUDENT_PARAM(51)));
+			linked.push_back(5, Student(STUDENT_PARAM(52)));
+			linked.push_back(5, Student(STUDENT_PARAM(53)), bExisted);
+
+			linked.push_back(6, Student(STUDENT_PARAM(61)));
+			linked.push_back(6, Student(STUDENT_PARAM(62)));
+			linked.push_back(6, Student(STUDENT_PARAM(63)), bExisted);
+
+			linked.push_back(2, Student(STUDENT_PARAM(21)));
+			linked.push_back(2, Student(STUDENT_PARAM(22)));
+			linked.push_back(2, Student(STUDENT_PARAM(23)), bExisted);
+
+			cout << __FUNCTION__ << "**remove 6***********************************************************************" << endl;
+			linked.remove(61);
+			linked.remove(62);
+			linked.remove(63);
+			for (auto itr = linked.begin(); itr != linked.end(); ++itr)
+			{
+				cout << (*itr) << endl;
+			}
+
+
+			cout << __FUNCTION__ << "**remove 5***********************************************************************" << endl;
+			linked.remove(51);
+			linked.remove(52);
+			linked.remove(53);
+			for (auto itr = linked.begin(); itr != linked.end(); ++itr)
+			{
+				cout << (*itr) << endl;
+			}
+			cout << __FUNCTION__ << "**remove 2***********************************************************************" << endl;
+			linked.remove(21);
+			linked.remove(22);
+			linked.remove(23);
+			for (auto itr = linked.begin(); itr != linked.end(); ++itr)
+			{
+				cout << (*itr) << endl;
+			}
+
+		}
+
 		static void test1()
 		{
 			bool bExisted = false;
 			//typedef priority_linked_hash_map<int, Student> linked_type;
-			typedef priority_linked_hash_map<int, Student, ObtainKeyOfStudent, true> linked_type;
+			typedef priority_linked_hash_map<int, Student, ObtainKeyOfStudent, false> linked_type;
 			linked_type linked;
 			linked.push_back(1, Student(STUDENT_PARAM(11)));
 			linked.push_back(1, Student(STUDENT_PARAM(12)));
@@ -135,6 +204,13 @@ namespace priority_linked_hash_map_test
 			linked.push_back(2, Student(STUDENT_PARAM(23)), bExisted);
 			linked.push_back(2, Student(STUDENT_PARAM(23 + 0)), bExisted);
 			linked.push_back(2, Student(STUDENT_PARAM(21 + 0)), bExisted);
+
+			cout << __FUNCTION__ << "**begin end***********************************************************************" << endl;
+			for (auto itr = linked.begin(); itr != linked.end(); ++itr)
+			{
+				cout << (*itr) << endl;
+			}
+
 
 			cout << __FUNCTION__ << "*************************************************************************" << endl;
 			cout << "size:" << linked.size() << endl;
@@ -351,7 +427,8 @@ namespace priority_linked_hash_map_test
 	public:
 		static void test_all()
 		{
-			test1();
+			test0();
+			//test1();
 			//test2();
 		}
 	};
