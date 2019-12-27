@@ -79,6 +79,7 @@ public:
 	typedef _Kty key_type;
 	typedef _Ty  list_value_type;
 	typedef list_value_type* list_value_pointer;
+	typedef const list_value_type* const_list_value_pointer;
 
 	//std::map
 	typedef _Priority   priority_type;       //map:key
@@ -92,6 +93,7 @@ public:
 	//std::list
 	typedef typename std::list<list_value_type> list_type;
 	typedef list_type* list_pointer;
+	typedef const list_type* const_list_pointer;
 	typedef typename list_type::size_type size_type;
 	typedef typename list_type::reference list_value_reference;
 	typedef typename list_type::const_reference const_list_value_reference;
@@ -124,10 +126,8 @@ private:
 		const StdContainerType* p = static_cast<const StdContainerType*>(itr._Getcont());
 		return const_cast<StdContainerType*>(p);
 	}
-public:
+private:
 	//迭代器
-	class Iterator;
-	friend class Iterator;
 	/*
 	*@brief:如何表示 end ,如何 让 --end()有效
 	*       如何让迭代器不失效
@@ -136,32 +136,32 @@ public:
 	*@think:[思考] 1.容器为空时的begin end
 	*              2.容器非空时的begin end
 	*/
-	class Iterator
+	//typedef priority_linked_hash_map<key_type, list_value_type, _IsAllowCover, priority_type, priority_compare, hasher, hash_key_equal> container_type;
+	typedef priority_linked_hash_map container_type;
+	class IteratorImpl
 	{
-		//typedef priority_linked_hash_map<key_type, list_value_type, _IsAllowCover, priority_type, priority_compare, hasher, hash_key_equal> container_type;
-		typedef priority_linked_hash_map container_type;
 		friend class priority_linked_hash_map;
-	private:
+	public:
 		const container_type  *pContainer_;
 		priority_map_iterator  priorityMapItr_;
 		list_iterator          listItr_;
 		bool 				   endFlag_;
 	public:
-		Iterator() :pContainer_(nullptr), endFlag_(true) {}
+		IteratorImpl() :pContainer_(nullptr), endFlag_(true) {}
 
-		Iterator(const Iterator &right)
+		IteratorImpl(const IteratorImpl &right)
 		{
 			_Init(right);
 		}
 
-		Iterator&operator=(const Iterator &right)
+		IteratorImpl & operator=(const IteratorImpl &right)
 		{
 			_Init(right);
 			return *this;
 		}
 
 	private:
-		void _Init(const Iterator &right)
+		void _Init(const IteratorImpl &right)
 		{
 			this->pContainer_ = right.pContainer_;
 			this->priorityMapItr_ = right.priorityMapItr_;
@@ -189,33 +189,43 @@ public:
 			return &(*listItr_);
 		}
 
-		Iterator& operator++() //++itr
+		void operator++() //++itr
 		{	// preincrement
 			_Increment();
-			return (*this);
 		}
 
-		Iterator operator++(int) //itr++
-		{	// postincrement
-			Iterator tempItr = *this;
-			_Increment();
-			return tempItr;
-		}
-
-		Iterator& operator--()
+		void operator--()
 		{	// predecrement
 			_Decrement();
-			return (*this);
 		}
 
-		Iterator operator--(int)
-		{	// postdecrement
-			Iterator tempItr = *this;
-			_Decrement();
-			return tempItr;
-		}
+		//IteratorImpl& operator++() //++itr
+		//{	// preincrement
+		//	_Increment();
+		//	return (*this);
+		//}
 
-		bool operator==(const Iterator &right)const
+		//void operator++(int) //itr++
+		//{	// postincrement
+		//	Iterator tempItr = *this;
+		//	_Increment();
+		//	return tempItr;
+		//}
+
+		//IteratorImpl& operator--()
+		//{	// predecrement
+		//	_Decrement();
+		//	return (*this);
+		//}
+
+		//IteratorImpl operator--(int)
+		//{	// postdecrement
+		//	Iterator tempItr = *this;
+		//	_Decrement();
+		//	return tempItr;
+		//}
+
+		bool operator==(const IteratorImpl &right)const
 		{
 			assert(this->pContainer_ == right.pContainer_);
 
@@ -236,7 +246,7 @@ public:
 			}
 		}
 
-		bool operator!=(const Iterator&other)const
+		inline bool operator!=(const IteratorImpl&other)const
 		{
 			return !(this->operator==(other));
 		}
@@ -358,10 +368,10 @@ public:
 			}
 		}
 
-		static Iterator _Begin(container_type * const pContainer)
+		static IteratorImpl _Begin(container_type * const pContainer)
 		{
 			assert(pContainer);
-			Iterator itr;
+			IteratorImpl itr;
 			itr.pContainer_ = pContainer;
 			if (pContainer->empty())
 			{
@@ -390,10 +400,10 @@ public:
 			return itr;
 		}
 
-		static Iterator _End(container_type * const pContainer)
+		static IteratorImpl _End(container_type * const pContainer)
 		{
 			assert(pContainer);
-			Iterator itr;
+			IteratorImpl itr;
 			itr.pContainer_ = pContainer;
 			itr.priorityMapItr_ = pContainer->priority_map_.end();
 			itr.endFlag_ = true;
@@ -423,10 +433,218 @@ public:
 		}
 	};
 
+public:
+	class Iterator;
+	class ConstIterator;
+	class IteratorBase
+	{
+	public:
+		const list_iterator& listItr()const { return impl_.listItr_; }
+	public:
+		IteratorImpl impl_;
+	};
+
+	class Iterator:public IteratorBase
+	{
+		friend class priority_linked_hash_map;
+	public:
+		Iterator() {}
+		Iterator(const Iterator &right)
+		{
+			this->impl_ = right.impl_;
+		}
+
+		Iterator & operator=(const Iterator &right)
+		{
+			this->impl_ = right.impl_;
+			return *this;
+		}
+
+		inline list_value_reference operator*() const
+		{	// return designated value
+			return (*impl_);
+		}
+
+		inline list_value_pointer operator->() const
+		{	// return pointer to class object
+			return &(*impl_);
+		}
+
+		Iterator& operator++() //++itr
+		{	// preincrement
+			++impl_;
+			return (*this);
+		}
+
+		Iterator operator++(int) //itr++
+		{	// postincrement
+			Iterator tempItr = *this;
+			++impl_;
+			return tempItr;
+		}
+
+		Iterator& operator--()
+		{	// predecrement
+			--impl_;
+			return (*this);
+		}
+
+		Iterator operator--(int)
+		{	// postdecrement
+			Iterator tempItr = *this;
+			--impl_;
+			return tempItr;
+		}
+
+		friend bool operator==(const Iterator &left, const Iterator &right)
+		{
+			return left.impl_ == right.impl_;
+		}
+
+		friend bool operator!=(const Iterator &left, const Iterator &right)
+		{
+			return left.impl_ != right.impl_;
+		}
+
+	private:
+		static Iterator _Begin(container_type * const pContainer)
+		{
+			Iterator itr;
+			itr.impl_ = IteratorImpl::_Begin(pContainer);
+			return itr;
+		}
+
+		static Iterator _End(container_type * const pContainer)
+		{
+			Iterator itr;
+			itr.impl_ = IteratorImpl::_End(pContainer);
+			return itr;
+		}
+	};
+
+	class ConstIterator :public IteratorBase
+	{
+		friend class priority_linked_hash_map;
+	public:
+		ConstIterator() {}
+		ConstIterator(const ConstIterator &right)
+		{
+			this->impl_ = right.impl_;
+		}
+
+		ConstIterator(const Iterator &right)
+		{
+			this->impl_ = right.impl_;
+		}
+
+		ConstIterator & operator=(const ConstIterator &right)
+		{
+			this->impl_ = right.impl_;
+			return *this;
+		}
+
+		ConstIterator & operator=(const Iterator &right)
+		{
+			this->impl_ = right.impl_;
+			return *this;
+		}
+
+		inline const_list_value_reference operator*() const
+		{	// return designated value
+			return (*impl_);
+		}
+
+		inline const_list_value_pointer operator->() const
+		{	// return pointer to class object
+			return &(*impl_);
+		}
+
+		ConstIterator& operator++() //++itr
+		{	// preincrement
+			++impl_;
+			return (*this);
+		}
+
+		ConstIterator operator++(int) //itr++
+		{	// postincrement
+			Iterator tempItr = *this;
+			++impl_;
+			return tempItr;
+		}
+
+		ConstIterator& operator--()
+		{	// predecrement
+			--impl_;
+			return (*this);
+		}
+
+		ConstIterator operator--(int)
+		{	// postdecrement
+			Iterator tempItr = *this;
+			--impl_;
+			return tempItr;
+		}
+
+		friend bool operator==(const ConstIterator &left,const ConstIterator &right)
+		{
+			return left.impl_ == right.impl_;
+		}
+
+		friend bool operator==(const Iterator &left, const ConstIterator &right)
+		{
+			return left.impl_ == right.impl_;
+		}
+
+		friend bool operator==(const ConstIterator &left, const Iterator &right)
+		{
+			return left.impl_ == right.impl_;
+		}
+
+		friend bool operator!=(const ConstIterator &left, const ConstIterator &right)
+		{
+			return left.impl_ != right.impl_;
+		}
+
+		friend bool operator!=(const Iterator &left, const ConstIterator &right)
+		{
+			return left.impl_ != right.impl_;
+		}
+
+		friend bool operator!=(const ConstIterator &left, const Iterator &right)
+		{
+			return left.impl_ != right.impl_;
+		}
+
+	private:
+		static ConstIterator _Begin(const container_type * const pContainer)
+		{
+			ConstIterator c_itr;
+			c_itr.impl_ = IteratorImpl::_Begin(const_cast<container_type *>(&(*pContainer)));
+			return c_itr;
+		}
+
+		static ConstIterator _End(const container_type * const pContainer)
+		{
+			ConstIterator c_itr;
+			c_itr.impl_ = IteratorImpl::_End(const_cast<container_type *>(&(*pContainer)));
+			return c_itr;
+		}
+
+		Iterator _Make_itr()
+		{
+			Iterator itr;
+			itr.impl_ = this->impl_;
+			return itr;
+		}
+	};
+
+
+
 	////Consistency with the standard library 与标准库保持一致性
 	typedef typename Iterator iterator;
-	typedef typename list_value_reference reference;
-	typedef typename const_list_value_reference const_reference;
+	typedef typename ConstIterator const_iterator;
+	//typedef typename list_value_reference reference;
+	//typedef typename const_list_value_reference const_reference;
 
 	//没有实现
 	//typedef typename const_list_iterator const_iterator;
@@ -807,25 +1025,25 @@ public:
 		return remove(k);
 	}
 
-	iterator erase(iterator itr)
+	iterator erase(const_iterator itr)
 	{//清理保持一致性
 		assert(itr != end());
 
-		iterator rtnItr = itr; //copy
+		const_iterator rtnItr = itr; //copy
 		++rtnItr;
 
-		list_pointer pList = _GetListPtr(itr.listItr_);
-		assert(pList && itr.listItr_ != pList->end());
+		list_pointer pList = _GetListPtr(itr.listItr());
+		assert(pList && itr.listItr() != pList->end());
 		//1.
-		const key_type &k = obtain_key_(*(itr.listItr_));
+		const key_type &k = obtain_key_(*(itr.listItr()));
 		hash_map_iterator hashMapItr = hash_map_.find(k);
 		assert(hashMapItr != hash_map_.end());
 		hash_map_.erase(hashMapItr);
 
 		//2.
-		pList->erase(itr.listItr_);//会使得itr.listItr_失效。如果 执行 ++itr，会出问题,所以拷贝一份，执行++
+		pList->erase(itr.listItr());//会使得itr.listItr_失效。如果 执行 ++itr，会出问题,所以拷贝一份，执行++
 
-		return rtnItr;
+		return rtnItr._Make_itr(); //借鉴 std::list
 	}
 
 	//**************************************************************************************************
@@ -864,9 +1082,29 @@ public:
 		return iterator::_Begin(this);
 	}
 
+	const_iterator begin()const
+	{
+		return const_iterator::_Begin(this);
+	}
+
+	const_iterator cbegin()const
+	{
+		return const_iterator::_Begin(this);
+	}
+
 	iterator end()
 	{
 		return iterator::_End(this);
+	}
+
+	const_iterator end()const
+	{
+		return const_iterator::_End(this);
+	}
+
+	const_iterator cend()const
+	{
+		return const_iterator::_End(this);
 	}
 
 public:
@@ -943,8 +1181,6 @@ private:
 	priority_map_type priority_map_;  //std::map< priority_type, list_type, priority_compare>
 	hash_map_type     hash_map_;
 };
-
-
 
 
 #endif //!HORSE_PRIORITY_LINKED_HASH_MAP

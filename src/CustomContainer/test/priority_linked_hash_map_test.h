@@ -63,6 +63,7 @@ namespace priority_linked_hash_map_test
 		inline const int &id()const { return id_; }
 		inline const int &key()const { return id_; }
 		const std::string &name()const { return  name_; }
+		void setName(const std::string name) { name_ = name; }
 	private:
 		int id_;
 		std::string name_;
@@ -154,10 +155,49 @@ namespace priority_linked_hash_map_test
 			linked.push_back(2, Student(STUDENT_PARAM(23)), bExisted);
 
 			const linked_type &const_linked = linked;
-			//for (auto itr = const_linked.begin(); itr != const_linked.end(); ++itr)
-			//{
-			//	cout << (*itr) << endl;
-			//}
+			cout << __FUNCTION__ << "**const_linked for : ***********************************************************************" << endl;
+			for (auto &elem : const_linked)
+			{
+				cout << elem << endl;
+			}
+
+			cout << __FUNCTION__ << "**linked for : ***********************************************************************" << endl;
+			for (auto &elem : linked)
+			{
+				elem.setName("ff");
+				cout << elem << endl;
+			}
+
+
+			cout << __FUNCTION__ << "**const_linked begin end***********************************************************************" << endl;
+			for (auto itr = const_linked.begin(); itr != const_linked.end(); ++itr)
+			{
+				cout << (*itr) << endl;
+			}
+
+			{
+				linked_type::const_iterator c_itr1 = const_linked.begin();
+				linked_type::const_iterator c_itr2 = const_linked.end();
+				linked_type::iterator itr1 = linked.begin();
+				linked_type::iterator itr2 = linked.end();
+				assert(itr1 == itr1);
+				assert(c_itr1 == c_itr1);				
+				assert(c_itr1==itr1);
+				assert(itr1 == c_itr1);
+				
+				assert(itr1 != itr2);
+				assert(c_itr1 != c_itr2);
+				assert(itr1 != c_itr2);
+				assert(c_itr1 != itr2);
+			}
+
+
+
+			cout << __FUNCTION__ << "**const_linked cbegin cend***********************************************************************" << endl;
+			for (auto itr = const_linked.cbegin(); itr != const_linked.cend(); ++itr)
+			{
+				cout << (*itr) << endl;
+			}
 
 			cout << __FUNCTION__ << "**erase 62 52 43***********************************************************************" << endl;
 			for (auto itr = linked.begin(); itr != linked.end();)
