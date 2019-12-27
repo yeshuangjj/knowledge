@@ -164,8 +164,13 @@ namespace priority_linked_hash_map_test
 			cout << __FUNCTION__ << "**linked for : ***********************************************************************" << endl;
 			for (auto &elem : linked)
 			{
-				elem.setName("ff");
 				cout << elem << endl;
+			}
+
+			cout << __FUNCTION__ << "**auto itr = const_linked.end() : ***********************************************************************" << endl;
+			for (auto itr = const_linked.end(); itr != const_linked.begin(); )
+			{
+				cout << *(--itr) << endl;
 			}
 
 
@@ -180,6 +185,7 @@ namespace priority_linked_hash_map_test
 				linked_type::const_iterator c_itr2 = const_linked.end();
 				linked_type::iterator itr1 = linked.begin();
 				linked_type::iterator itr2 = linked.end();
+				--itr2;
 				assert(itr1 == itr1);
 				assert(c_itr1 == c_itr1);				
 				assert(c_itr1==itr1);
