@@ -111,71 +111,21 @@ private:
 
 	//std::map
 	typedef typename std::map< priority_type, list_type, priority_compare> priority_map_type;
-	typedef priority_map_type*  priority_map_pointer;
-	typedef const priority_map_type* const_priority_map_pointer;
 	typedef typename priority_map_type::value_type priority_map_value_type;
 	typedef typename priority_map_type::iterator priority_map_iterator;
 	typedef typename priority_map_type::const_iterator const_priority_map_iterator;
 	typedef typename priority_map_type::reverse_iterator priority_map_reverse_iterator;
 	typedef typename priority_map_type::const_reverse_iterator const_priority_map_reverse_iterator;
 
-	//template<typename StdContainerType, typename StdIteratorType>
-	//friend StdContainerType * _GetStdContainer(StdIteratorType itr)
-	//{
-	//	if (itr._Getcont() == nullptr)
-	//		return nullptr;
-
-	//	const StdContainerType* p = static_cast<const StdContainerType*>(itr._Getcont());
-	//	return const_cast<StdContainerType*>(p);
-	//}
-
-	static list_pointer _GetStdContainer(list_iterator itr)
+	template<typename StdContainerType, typename StdIteratorType>
+	static StdContainerType * _GetStdContainer(StdIteratorType itr)
 	{
 		if (itr._Getcont() == nullptr)
 			return nullptr;
 
-		const_list_pointer p = static_cast<const_list_pointer>(itr._Getcont());
-		return const_cast<list_pointer>(p);
+		const StdContainerType* p = static_cast<const StdContainerType*>(itr._Getcont());
+		return const_cast<StdContainerType*>(p);
 	}
-
-	static list_pointer _GetStdContainer(const_list_iterator itr)
-	{
-		if (itr._Getcont() == nullptr)
-			return nullptr;
-
-		const_list_pointer p = static_cast<const_list_pointer>(itr._Getcont());
-		return const_cast<list_pointer>(p);
-	}
-
-	//template<typename StdContainerType, typename StdIteratorType>
-	static list_pointer _GetStdContainer(list_reverse_iterator r_itr)
-	{
-		if (r_itr.base()._Getcont() == nullptr)
-			return nullptr;
-
-		const_list_pointer p = static_cast<const_list_pointer>(r_itr.base()._Getcont());
-		return const_cast<list_pointer>(p);
-	}
-
-	//template<typename StdContainerType, typename StdIteratorType>
-	static priority_map_pointer _GetStdContainer(priority_map_iterator itr)
-	{
-		if (itr._Getcont() == nullptr)
-			return nullptr;
-
-		const_priority_map_pointer p = static_cast<const_priority_map_pointer>(itr._Getcont());
-		return const_cast<priority_map_pointer>(p);
-	}
-
-	static priority_map_pointer _GetStdContainer(priority_map_reverse_iterator r_itr)
-	{
-		if (r_itr.base()._Getcont() == nullptr)
-			return nullptr;
-
-		const_priority_map_pointer p = static_cast<const_priority_map_pointer>(r_itr.base()._Getcont());
-		return const_cast<priority_map_pointer>(p);
-	}
-
 private:
 	//µü´úÆ÷
 	/*
@@ -188,7 +138,7 @@ private:
 	*/
 	//typedef priority_linked_hash_map<key_type, list_value_type, _IsAllowCover, priority_type, priority_compare, hasher, hash_key_equal> container_type;
 	typedef priority_linked_hash_map container_type;
-	template<class PriorityMapIteratorType, class ListIteratorType/*,class GetListPtrFunc,class GetMapPtrFunc*/>
+	template<class PriorityMapIteratorType, class ListIteratorType>
 	class IteratorImplBase
 	{
 		friend class priority_linked_hash_map;
@@ -224,8 +174,8 @@ private:
 		{	// return designated value
 			assert(pContainer_->empty() == false);
 			assert(pContainer_ != nullptr);
-			assert(_GetListPtr() != nullptr);
-			assert(_GetMapPtr() != nullptr);
+			assert(priorityMapItr_._Getcont() != nullptr);
+			assert(listItr_._Getcont() != nullptr);
 			assert(!endFlag_); //if assert false, iterator is out of range,please check your logic
 			return (*listItr_);
 		}
@@ -234,8 +184,8 @@ private:
 		{	// return pointer to class object
 			assert(pContainer_->empty() == false);
 			assert(pContainer_ != nullptr);
-			assert(_GetListPtr() != nullptr);
-			assert(_GetMapPtr() != nullptr);
+			assert(priorityMapItr_._Getcont() != nullptr);
+			assert(listItr_._Getcont() != nullptr);
 			assert(!endFlag_); //if assert false, iterator is out of range,please check your logic
 			return &(*listItr_);
 		}
@@ -279,18 +229,9 @@ private:
 		virtual void _Increment() = 0;
 		virtual void _Decrement() = 0;
 	protected:
-		inline list_pointer _GetListPtr()const
+		inline list_pointer _GetListPtr()
 		{
-			//return container_type::_GetStdContainer<list_type, list_iterator>(listItr_);
-			return _GetStdContainer(listItr_);
-			//return GetListPtrFunc(listItr_);
-		}
-
-		inline priority_map_pointer _GetMapPtr()const
-		{
-			//return container_type::_GetStdContainer<priority_map_type, priority_map_iterator>(listItr_);
-			return _GetStdContainer(priorityMapItr_);
-			//return GetMapPtrFunc();
+			return container_type::_GetStdContainer<list_type, list_iterator>(listItr_);
 		}
 	};
 
@@ -933,7 +874,7 @@ public:
 	public:
 		IteratorImplType impl_;
 	public:
-		const list_iterator& listItr()const { return impl_.listItr_; }
+		const list_iterator& listItr()const { return impl_.listItr_; }		
 	public:
 		Iterator() {}
 		Iterator(const Iterator &right)
@@ -1381,26 +1322,12 @@ private:
 	*/
 	list_pointer _GetListPtr(list_iterator listItr)
 	{
-		//return _GetStdContainer<list_type, list_iterator>(listItr);
-		//return _GetStdContainer(listItr);
-
-		if (listItr._Getcont() == nullptr)
-			return nullptr;
-
-		const_list_pointer p = static_cast<const_list_pointer>(listItr._Getcont());
-		return const_cast<list_pointer>(p);
+		return _GetStdContainer<list_type, list_iterator>(listItr);
 	}
 
 	list_pointer _GetListPtr(const_list_iterator listItr)
 	{
-		//return _GetStdContainer<list_type, const_list_iterator>(listItr);
-		//return _GetStdContainer(listItr);
-
-		if (listItr._Getcont() == nullptr)
-			return nullptr;
-
-		const_list_pointer p = static_cast<const_list_pointer>(listItr._Getcont());
-		return const_cast<list_pointer>(p);
+		return _GetStdContainer<list_type, const_list_iterator>(listItr);
 	}
 
 	/**

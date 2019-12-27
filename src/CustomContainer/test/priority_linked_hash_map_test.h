@@ -167,6 +167,30 @@ namespace priority_linked_hash_map_test
 				cout << elem << endl;
 			}
 
+			//cout << __FUNCTION__ << "**const_linked rbegin rend***********************************************************************" << endl;
+			//for (auto itr = const_linked.rbegin(); itr != const_linked.rend(); ++itr)
+			//{
+			//	cout << (*itr) << endl;
+			//}
+
+			//cout << __FUNCTION__ << "**linked crbegin crend***********************************************************************" << endl;
+			//for (auto itr = const_linked.crbegin(); itr != const_linked.crend(); ++itr)
+			//{
+			//	cout << (*itr) << endl;
+			//}
+
+			//cout << __FUNCTION__ << "**linked rbegin rend***********************************************************************" << endl;
+			//for (auto itr = const_linked.rbegin(); itr != const_linked.rend(); ++itr)
+			//{
+			//	cout << (*itr) << endl;
+			//}
+
+			cout << __FUNCTION__ << "**linked crbegin crend***********************************************************************" << endl;
+			for (auto itr = linked.crbegin(); itr != linked.crend(); ++itr)
+			{
+				cout << (*itr) << endl;
+			}
+
 			cout << __FUNCTION__ << "**auto itr = const_linked.end() : ***********************************************************************" << endl;
 			for (auto itr = const_linked.end(); itr != const_linked.begin(); )
 			{
@@ -174,11 +198,13 @@ namespace priority_linked_hash_map_test
 			}
 
 
+
 			cout << __FUNCTION__ << "**const_linked begin end***********************************************************************" << endl;
 			for (auto itr = const_linked.begin(); itr != const_linked.end(); ++itr)
 			{
 				cout << (*itr) << endl;
 			}
+
 
 			{
 				linked_type::const_iterator c_itr1 = const_linked.begin();

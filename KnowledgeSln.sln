@@ -29,6 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomContainer", "CustomCo
 		src\CustomContainer\linked_hash_map.h = src\CustomContainer\linked_hash_map.h
 		src\CustomContainer\linked_hash_map_deprecated.h = src\CustomContainer\linked_hash_map_deprecated.h
 		src\CustomContainer\linked_hash_map_helper.h = src\CustomContainer\linked_hash_map_helper.h
+		src\CustomContainer\powerful_priority_linked_hash_map.h = src\CustomContainer\powerful_priority_linked_hash_map.h
 		src\CustomContainer\priority_linked_hash_map.h = src\CustomContainer\priority_linked_hash_map.h
 		src\CustomContainer\simple_priority_linked_hash_map.h = src\CustomContainer\simple_priority_linked_hash_map.h
 	EndProjectSection
