@@ -24,7 +24,7 @@ namespace stdcxx
 #endif
 }
 
-#include "priority_linked_hash_map.h"
+#include "..\priority_linked_hash_map.h"
 
 namespace priority_linked_hash_map_test
 {
@@ -134,10 +134,6 @@ namespace priority_linked_hash_map_test
 			linked.push_back(1, Student(STUDENT_PARAM(12)));
 			linked.push_back(1, Student(STUDENT_PARAM(13)), bExisted);
 
-			linked.push_back(0, Student(STUDENT_PARAM(1)));
-			linked.push_back(0, Student(STUDENT_PARAM(2)));
-			linked.push_back(0, Student(STUDENT_PARAM(3)), bExisted);
-
 			linked.push_back(4, Student(STUDENT_PARAM(41)));
 			linked.push_back(4, Student(STUDENT_PARAM(42)));
 			linked.push_back(4, Student(STUDENT_PARAM(43)), bExisted);
@@ -150,9 +146,28 @@ namespace priority_linked_hash_map_test
 			linked.push_back(6, Student(STUDENT_PARAM(62)));
 			linked.push_back(6, Student(STUDENT_PARAM(63)), bExisted);
 
+			auto itr_begin1 = linked.begin();
+			auto itr_end1 = linked.end();
+
 			linked.push_back(2, Student(STUDENT_PARAM(21)));
 			linked.push_back(2, Student(STUDENT_PARAM(22)));
 			linked.push_back(2, Student(STUDENT_PARAM(23)), bExisted);
+
+			linked.push_back(7, Student(STUDENT_PARAM(71)));
+			linked.push_back(7, Student(STUDENT_PARAM(72)));
+			linked.push_back(7, Student(STUDENT_PARAM(73)), bExisted);
+
+			auto itr_begin2 = linked.begin();
+			linked.push_back(0, Student(STUDENT_PARAM(1)));
+			linked.push_back(0, Student(STUDENT_PARAM(2)));
+			linked.push_back(0, Student(STUDENT_PARAM(3)), bExisted);
+			auto itr_begin3 = linked.begin();
+			
+			auto itr_end2 = linked.end();
+
+			assert(itr_end1== itr_end2);
+			assert(itr_begin1 == itr_begin2);
+			assert(itr_begin1 != itr_begin3);
 
 			const linked_type &const_linked = linked;
 			cout << __FUNCTION__ << "**const_linked for : ***********************************************************************" << endl;
@@ -167,28 +182,34 @@ namespace priority_linked_hash_map_test
 				cout << elem << endl;
 			}
 
-			//cout << __FUNCTION__ << "**const_linked rbegin rend***********************************************************************" << endl;
-			//for (auto itr = const_linked.rbegin(); itr != const_linked.rend(); ++itr)
-			//{
-			//	cout << (*itr) << endl;
-			//}
+			cout << __FUNCTION__ << "**const_linked rbegin rend***********************************************************************" << endl;
+			for (auto itr = const_linked.rbegin(); itr != const_linked.rend(); ++itr)
+			{
+				cout << (*itr) << endl;
+			}
 
-			//cout << __FUNCTION__ << "**linked crbegin crend***********************************************************************" << endl;
-			//for (auto itr = const_linked.crbegin(); itr != const_linked.crend(); ++itr)
-			//{
-			//	cout << (*itr) << endl;
-			//}
+			cout << __FUNCTION__ << "**const_linked crbegin crend***********************************************************************" << endl;
+			for (auto itr = const_linked.crbegin(); itr != const_linked.crend(); ++itr)
+			{
+				cout << (*itr) << endl;
+			}
 
-			//cout << __FUNCTION__ << "**linked rbegin rend***********************************************************************" << endl;
-			//for (auto itr = const_linked.rbegin(); itr != const_linked.rend(); ++itr)
-			//{
-			//	cout << (*itr) << endl;
-			//}
+			cout << __FUNCTION__ << "**linked rbegin rend***********************************************************************" << endl;
+			for (auto itr = linked.rbegin(); itr != const_linked.rend(); ++itr)
+			{
+				cout << (*itr) << endl;
+			}
 
 			cout << __FUNCTION__ << "**linked crbegin crend***********************************************************************" << endl;
 			for (auto itr = linked.crbegin(); itr != linked.crend(); ++itr)
 			{
 				cout << (*itr) << endl;
+			}
+
+			cout << __FUNCTION__ << "**linked --rend() ±éÀú***********************************************************************" << endl;
+			for (auto itr = linked.rend(); itr != const_linked.rbegin();)
+			{
+				cout << *(--itr) << endl;
 			}
 
 			cout << __FUNCTION__ << "**auto itr = const_linked.end() : ***********************************************************************" << endl;
@@ -211,12 +232,17 @@ namespace priority_linked_hash_map_test
 				linked_type::const_iterator c_itr2 = const_linked.end();
 				linked_type::iterator itr1 = linked.begin();
 				linked_type::iterator itr2 = linked.end();
+
+				linked_type::const_iterator c_left1 = itr1;
+				linked_type::const_iterator c_left2;
+				c_left2 = itr1;
+
 				--itr2;
 				assert(itr1 == itr1);
-				assert(c_itr1 == c_itr1);				
-				assert(c_itr1==itr1);
+				assert(c_itr1 == c_itr1);
+				assert(c_itr1 == itr1);
 				assert(itr1 == c_itr1);
-				
+
 				assert(itr1 != itr2);
 				assert(c_itr1 != c_itr2);
 				assert(itr1 != c_itr2);
@@ -242,10 +268,10 @@ namespace priority_linked_hash_map_test
 				else if (itr->id() == 43)
 					itr = linked.erase(itr);
 				else
-					++itr;				
+					++itr;
 			}
 			cout << "**************" << endl;
-			for (auto itr = linked.begin(); itr != linked.end();++itr)
+			for (auto itr = linked.begin(); itr != linked.end(); ++itr)
 			{
 				cout << (*itr) << endl;
 			}
@@ -312,7 +338,7 @@ namespace priority_linked_hash_map_test
 			cout << __FUNCTION__ << "*************************************************************************" << endl;
 			cout << "size:" << linked.size() << endl;
 			cout << "is empty:" << linked.empty() << endl;
-			linked.traverse(show);
+			linked.for_each(show);
 
 			//remove
 			cout << __FUNCTION__ << "**remove***********************************************************************" << endl;
@@ -320,7 +346,7 @@ namespace priority_linked_hash_map_test
 			wasExisted = linked.remove(9999);
 			cout << "size:" << linked.size() << endl;
 			cout << "is empty:" << linked.empty() << endl;
-			linked.traverse(show);
+			linked.for_each(show);
 
 			//pop
 			if (linked.empty() == false)
@@ -333,13 +359,13 @@ namespace priority_linked_hash_map_test
 			}
 			cout << __FUNCTION__ << "**pop***********************************************************************" << endl;
 			cout << "size:" << linked.size() << endl;
-			linked.traverse(show);
+			linked.for_each(show);
 
 			//clear(priority)
 			linked.clear(1);
 			cout << __FUNCTION__ << "**clear(priority)***********************************************************************" << endl;
 			cout << "size:" << linked.size() << endl;
-			linked.traverse(show);
+			linked.for_each(show);
 
 			//find
 			do
@@ -368,9 +394,9 @@ namespace priority_linked_hash_map_test
 			linked_type otherLinked;
 			linked.swap(otherLinked);
 			cout << __FUNCTION__ << "**linked***********************************************************************" << endl;
-			linked.traverse_reverse(show);
+			linked.for_each_reverse(show);
 			cout << __FUNCTION__ << "**otherLinked***********************************************************************" << endl;
-			otherLinked.traverse_reverse(show);
+			otherLinked.for_each_reverse(show);
 
 			//const
 			do {
@@ -379,10 +405,10 @@ namespace priority_linked_hash_map_test
 				auto &const_front = const_ref.front();
 				cout << "size:" << const_ref.size() << endl;
 				cout << "is empty:" << const_ref.empty() << endl;
-				cout << __FUNCTION__ << "**const_ref traverse***********************************************************************" << endl;
-				const_ref.traverse(show);
-				cout << __FUNCTION__ << "**const_ref traverse_reverse***********************************************************************" << endl;
-				const_ref.traverse_reverse(show);
+				cout << __FUNCTION__ << "**const_ref for_each***********************************************************************" << endl;
+				const_ref.for_each(show);
+				cout << __FUNCTION__ << "**const_ref for_each_reverse***********************************************************************" << endl;
+				const_ref.for_each_reverse(show);
 
 				//find
 				do
@@ -425,7 +451,7 @@ namespace priority_linked_hash_map_test
 			cout << __FUNCTION__ << "*************************************************************************" << endl;
 			cout << "size:" << linked.size() << endl;
 			cout << "is empty:" << linked.empty() << endl;
-			linked.traverse(showPtr);
+			linked.for_each(showPtr);
 
 			//remove
 			cout << __FUNCTION__ << "**remove***********************************************************************" << endl;
@@ -433,7 +459,7 @@ namespace priority_linked_hash_map_test
 			wasExisted = linked.remove(9999);
 			cout << "size:" << linked.size() << endl;
 			cout << "is empty:" << linked.empty() << endl;
-			linked.traverse(showPtr);
+			linked.for_each(showPtr);
 
 			//pop
 			if (linked.empty() == false)
@@ -446,13 +472,13 @@ namespace priority_linked_hash_map_test
 			}
 			cout << __FUNCTION__ << "**pop***********************************************************************" << endl;
 			cout << "size:" << linked.size() << endl;
-			linked.traverse(showPtr);
+			linked.for_each(showPtr);
 
 			//clear(priority)
 			linked.clear(1);
 			cout << __FUNCTION__ << "**clear(priority)***********************************************************************" << endl;
 			cout << "size:" << linked.size() << endl;
-			linked.traverse(showPtr);
+			linked.for_each(showPtr);
 
 			//find
 			do
@@ -481,9 +507,9 @@ namespace priority_linked_hash_map_test
 			linked_type otherLinked;
 			linked.swap(otherLinked);
 			cout << __FUNCTION__ << "**linked***********************************************************************" << endl;
-			linked.traverse_reverse(showPtr);
+			linked.for_each_reverse(showPtr);
 			cout << __FUNCTION__ << "**otherLinked***********************************************************************" << endl;
-			otherLinked.traverse_reverse(showPtr);
+			otherLinked.for_each_reverse(showPtr);
 
 			//const
 			do {
@@ -492,10 +518,10 @@ namespace priority_linked_hash_map_test
 				auto &const_front = const_ref.front();
 				cout << "size:" << const_ref.size() << endl;
 				cout << "is empty:" << const_ref.empty() << endl;
-				cout << __FUNCTION__ << "**const_ref traverse***********************************************************************" << endl;
-				const_ref.traverse(showPtr);
-				cout << __FUNCTION__ << "**const_ref traverse_reverse***********************************************************************" << endl;
-				const_ref.traverse_reverse(showPtr);
+				cout << __FUNCTION__ << "**const_ref for_each***********************************************************************" << endl;
+				const_ref.for_each(showPtr);
+				cout << __FUNCTION__ << "**const_ref for_each_reverse***********************************************************************" << endl;
+				const_ref.for_each_reverse(showPtr);
 
 				//find
 				cout << __FUNCTION__ << "**find const***********************************************************************" << endl;
@@ -525,8 +551,8 @@ namespace priority_linked_hash_map_test
 		static void test_all()
 		{
 			test0();
-			//test1();
-			//test2();
+			test1();
+			test2();
 		}
 	};
 }
