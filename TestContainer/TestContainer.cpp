@@ -6,7 +6,7 @@
 #include <map>
 #include <string>
 
-#include "../src/CustomContainer/linked_hash_map_helper.h"
+//#include "../src/CustomContainer/linked_hash_map_helper.h"
 #include "../src/CustomContainer/test/priority_linked_hash_map_test.h"
 
 
@@ -59,14 +59,26 @@ typedef std::map<int, std::string> map_type;
 
 int main()
 {
-    list_type l;
-    l.begin()._Clrcont();
-    map_type m;
-    m.insert(std::make_pair(3, std::string("c")));
+    {
+        list_type l;
+        l.push_back(1);
+        //list_type::iterator itr;
+        //itr != l.begin();
 
-    m.begin()==m.cbegin();
-    
-    
+        l.begin()._Getcont();
+    }
+
+    {
+        map_type m;
+        m.insert(std::make_pair(3, std::string("c")));
+        //map_type::iterator itr;
+        //itr == m.begin();
+
+        m.begin() == m.cbegin();
+    }
+
+
+ 
     //Test<PriorityMapReverseIteratorTool, ListReverseIteratorTool>::foo();
     priority_linked_hash_map_test::test_case::test_all();
     return 0;

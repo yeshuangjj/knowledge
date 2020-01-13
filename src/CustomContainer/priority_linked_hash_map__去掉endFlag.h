@@ -138,7 +138,7 @@ private:
 		typename ListIteratorType,
 		typename PriorityMapToolType,
 		typename ListToolType>
-		class IteratorImplBase
+		class IteratorImpl
 	{
 		typedef typename ToolWrapper<PriorityMapToolType>::type PriorityMapTool;
 		typedef typename ToolWrapper<ListToolType>::type        ListTool;
@@ -146,96 +146,107 @@ private:
 		typedef typename PriorityMapIteratorType                PriorityMapIterator;
 		typedef typename ListIteratorType                       ListIterator;
 	public:
-		const container_type *pContainer_;
-		PriorityMapIterator   priorityMapItr_;
-		ListIterator          listItr_;
+		const container_type         *pContainer_;
+		mutable PriorityMapIterator   priorityMapItr_;
+		mutable ListIterator          listItr_;
+		bool 				          endFlag_;
 	public:
-		IteratorImplBase() :pContainer_(nullptr) {}
+		IteratorImpl() :pContainer_(nullptr), endFlag_(true) {}
 
-		IteratorImplBase(const IteratorImplBase &right)
+		IteratorImpl(const IteratorImpl &right)
 		{
 			_Init(right);
 		}
 
-		IteratorImplBase & operator=(const IteratorImplBase &right)
+		IteratorImpl & operator=(const IteratorImpl &right)
 		{
 			_Init(right);
 			return *this;
 		}
 
 	private:
-		void _Init(const IteratorImplBase &right)
+		void _Init(const IteratorImpl &right)
 		{
 			this->pContainer_ = right.pContainer_;
 			this->priorityMapItr_ = right.priorityMapItr_;
 			this->listItr_ = right.listItr_;
+			this->endFlag_ = right.endFlag_;
 		}
-
-		inline void _Check()const
-		{
-#ifdef _DEBUG
-			//if assert false, iterator is out of range,please check your logic
-			assert(pContainer_ != nullptr && pContainer_->empty() == false);
-			assert(_GetMapPtr() != nullptr && _GetMapPtr()->empty() == false);
-			assert(_GetListPtr() != nullptr && _GetListPtr()->empty() == false);
-#endif
-		}
-
 	public:
 		list_value_reference operator*() const
 		{	// return designated value			
-			_Check();
+			assert(pContainer_ != nullptr);
+			assert(pContainer_->empty() == false);
+			assert(_GetListPtr() != nullptr && _GetListPtr()->empty() == false);
+			assert(_GetMapPtr() != nullptr && _GetMapPtr()->empty() == false);
+			assert(!endFlag_); //if assert false, iterator is out of range,please check your logic
 			return (*listItr_);
 		}
 
 		list_value_pointer operator->() const
 		{	// return pointer to class object
-			_Check();
+			assert(pContainer_ != nullptr);
+			assert(pContainer_->empty() == false);
+			assert(_GetListPtr() != nullptr && _GetListPtr()->empty() == false);
+			assert(_GetMapPtr() != nullptr && _GetMapPtr()->empty() == false);
+			assert(!endFlag_); //if assert false, iterator is out of range,please check your logic
 			return &(*listItr_);
 		}
 
-		bool operator==(const IteratorImplBase &right)const
+		bool operator==(const IteratorImpl &right)const
 		{
-			assert(this->pContainer_ != nullptr && this->pContainer_ == right.pContainer_);
+			assert(this->pContainer_ == right.pContainer_);
 
-			if (this->priorityMapItr_ == _GetPriorityMapEndIterator(pContainer_->priority_map_)
-				|| right.priorityMapItr_ == _GetPriorityMapEndIterator(pContainer_->priority_map_))
-			{
-				return this->priorityMapItr_ == right.priorityMapItr_
-					&& this->_GetListPtr() == right._GetListPtr();
+			//如果 priority_map_为空  end iterator 比较特殊[需要仔细斟酌]
+			if (this->pContainer_->priority_map_.empty())
+			{	//此时listItr_是无效的
+				assert(this->_GetListPtr() == nullptr && right._GetListPtr() == nullptr);
+				assert(this->priorityMapItr_ == _GetPriorityMapEndIterator(pContainer_->priority_map_) && this->priorityMapItr_ == right.priorityMapItr_);
+				assert(this->endFlag_ && right.endFlag_);
+
+				return true;
 			}
 			else
 			{
-				assert(this->_GetListPtr() && right._GetListPtr());
-				return this->priorityMapItr_ == right.priorityMapItr_
-					&& this->listItr_ == right.listItr_;
+				if (this->endFlag_)
+				{
+					assert(this->priorityMapItr_ == _GetPriorityMapEndIterator(pContainer_->priority_map_));
+					return this->endFlag_ == right.endFlag_
+						&& this->priorityMapItr_ == right.priorityMapItr_;
+				}
+				else
+				{
+					return this->endFlag_ == right.endFlag_
+						&& this->priorityMapItr_ == right.priorityMapItr_
+						&& this->listItr_ == right.listItr_;
+				}
 			}
 		}
 
-		inline bool operator!=(const IteratorImplBase &right)const
+		inline bool operator!=(const IteratorImpl &right)const
 		{
 			return !(this->operator==(right));
 		}
 
-		inline void operator++() //++itr
+		void operator++() //++itr
 		{	// preincrement
 			_Increment();
 		}
 
-		inline void operator--() //--itr
+		void operator--()
 		{	// predecrement
 			_Decrement();
 		}
 
 	private:
 		/*
-		*@brief: 如何表示end : priorityMapItr_ == priority_map_.end() listItr_为ListIterator(),
+		*@brief: 如何表示end : priorityMapItr_ == priority_map_.end() listItr_为最后ListIterator(),
 		*@note： 如果容器是空的呢？begin()本身就是end()
 		*
 		*/
 		void _Increment()
 		{
-			_Check();
+			assert(pContainer_ && pContainer_->empty() == false && endFlag_ == false);
 
 			list_pointer pList = _GetListPtr();
 			assert(pList && pList->empty() == false);
@@ -245,24 +256,30 @@ private:
 				(void)0; //do nothing
 			}
 			else
-			{	// 如果该链表后面没有元素				
-				++priorityMapItr_;  // 移到下一个priority
-
+			{	// 如果该链表后面没有元素
 				bool bFind = false;
+				++priorityMapItr_;
+
 				for (; priorityMapItr_ != _GetPriorityMapEndIterator(pContainer_->priority_map_); ++priorityMapItr_)
 				{	//一直找到非空的链表
 					pList = &(priorityMapItr_->second);
-					assert(pList);
-					if (pList->empty() == false)
+					if (pList->empty())
+					{
+						listItr_ = _GetListEndIterator(*pList);
+						continue;
+					}
+					else
 					{
 						bFind = true;
 						listItr_ = _GetListBeginIterator(*pList);
 						break;
 					}
 				}
-
-				if (!bFind)
+				assert(pList);
+				endFlag_ = !bFind;
+				if (endFlag_)
 				{	//说明到了end
+					assert(listItr_ == _GetListEndIterator(*pList));
 					assert(priorityMapItr_ == _GetPriorityMapEndIterator(pContainer_->priority_map_));
 					listItr_ = ListIterator();
 				}
@@ -275,40 +292,45 @@ private:
 		*/
 		void _Decrement()
 		{
-			assert(pContainer_ != nullptr && pContainer_->empty() == false); // 检查，确保pContainer_非空
+			assert(pContainer_ && pContainer_->empty() == false);//必须确保是有元素的情况下
 
 			list_pointer pList = _GetListPtr();
-			if (priorityMapItr_ == _GetPriorityMapEndIterator(pContainer_->priority_map_))
+			if (endFlag_)
 			{	// 说明当前再执行 --end()
 				assert(_GetListPtr() == nullptr);
+				assert(priorityMapItr_ == _GetPriorityMapEndIterator(pContainer_->priority_map_));
 				bool bFind = false;
-				do
+				while (true)
 				{
-					--priorityMapItr_;  // 移到上一个priority
+					--priorityMapItr_;
 					pList = &(priorityMapItr_->second);
+					assert(pList);
 					if (pList->empty() == false)
 					{
 						bFind = true;
 						listItr_ = (--_GetListEndIterator(*pList)); //list最后一个元素的迭代器
+						endFlag_ = false;
 						break;
 					}
-				} while (priorityMapItr_ != _GetPriorityMapBeginIterator(pContainer_->priority_map_));
+
+					if (priorityMapItr_ == _GetPriorityMapBeginIterator(pContainer_->priority_map_))  // 说明此迭代器已经是 begin，不能再执行 --
+						break;
+				}
 				assert(bFind);  // if bFind is false,indicate the container is empty,please check my code			
 			}
 			else
 			{
-				_Check();
 				assert(pList && pList->empty() == false && listItr_ != _GetListEndIterator(*pList));
+				if (listItr_ == _GetListBeginIterator(*pList))
+				{	// 如果该迭代器是该list的begin元素
+					// 寻找上一个非空的list
 
-				if (listItr_ != _GetListBeginIterator(*pList))
-				{	// 如果该迭代器不是该list的begin元素,直接 --
-					--listItr_;
-				}
-				else
-				{	// 如果该迭代器是该list的begin元素,寻找上一个非空的list
 					bool bFind = false;
-					while (priorityMapItr_ != _GetPriorityMapBeginIterator(pContainer_->priority_map_))
+					while (true)
 					{
+						if (priorityMapItr_ == _GetPriorityMapBeginIterator(pContainer_->priority_map_))  // 说明此迭代器已经是 begin，不能再执行 --
+							break;
+
 						--priorityMapItr_; //跳到上一个迭代器
 						pList = &(priorityMapItr_->second);
 						if (pList->empty() == false)
@@ -318,46 +340,58 @@ private:
 							break;
 						}
 					}
+
 					assert(bFind);  // if bFind is false,indicate origin iterator is begin  [ 如果为assert(false),表面当前再执行 --begin() ]
+				}
+				else
+				{	// 如果该迭代器不是该list的begin元素
+					//直接 --
+					--listItr_;
 				}
 			}
 		}
 	public:
-		static IteratorImplBase _Begin(container_type * const pContainer)
+		static IteratorImpl _Begin(container_type * const pContainer)
 		{
 			assert(pContainer);
-			IteratorImplBase itr;
+			IteratorImpl itr;
 			itr.pContainer_ = pContainer;
 			if (pContainer->empty())
 			{
 				itr.priorityMapItr_ = _GetPriorityMapEndIterator(pContainer->priority_map_);
-				//itr.listItr_ 为 ListIterator()
+				itr.endFlag_ = true;
 				assert(itr._GetListPtr() == nullptr);
 			}
 			else
 			{
+				bool bFind = false;
+				
 				for (PriorityMapIterator priorityMapItr = _GetPriorityMapBeginIterator(pContainer->priority_map_); priorityMapItr != _GetPriorityMapEndIterator(pContainer->priority_map_); ++priorityMapItr)
 				{
 					list_type &l = priorityMapItr->second;
 					if (l.empty() == false)
 					{
+						bFind = true;
 						itr.priorityMapItr_ = priorityMapItr;
 						itr.listItr_ = _GetListBeginIterator(l);
+						itr.endFlag_ = false;
 						break;
 					}
 				}
+				assert(bFind);
 			}
 
 			return itr;
 		}
 
-		static IteratorImplBase _End(container_type * const pContainer)
+		static IteratorImpl _End(container_type * const pContainer)
 		{
-			assert(pContainer);
-			IteratorImplBase itr;
-			itr.pContainer_ = pContainer;
+			//assert(pContainer);
+			IteratorImpl itr;
+			itr.pContainer_ = pContainer;			
 			itr.priorityMapItr_ = _GetPriorityMapEndIterator(pContainer->priority_map_);
-			//itr.listItr_ 为 ListIterator()
+			itr.endFlag_ = true;
+			//itr.listItr_ 为 list_iterator()
 			return itr;
 		}
 
@@ -374,43 +408,43 @@ private:
 
 		inline static PriorityMapIterator _GetPriorityMapBeginIterator(const priority_map_type &priority_map)
 		{
-			return PriorityMapTool::_GetBeginIterator(const_cast<priority_map_type&>(priority_map));
-			//return PriorityMapTool::_GetBeginIterator(*(const_cast<priority_map_pointer>(&priority_map)));
+			//return PriorityMapTool::_GetBeginIterator(const_cast<priority_map_type&>(priority_map));
+			return PriorityMapTool::_GetBeginIterator(*(const_cast<priority_map_type *>(&priority_map)));
 		}
 
 		inline static PriorityMapIterator _GetPriorityMapEndIterator(const priority_map_type &priority_map)
 		{
-			return PriorityMapTool::_GetEndIterator(const_cast<priority_map_type&>(priority_map));
-			//return PriorityMapTool::_GetEndIterator(*(const_cast<priority_map_pointer>(&priority_map)));
+			//return PriorityMapTool::_GetEndIterator(const_cast<priority_map_type&>(priority_map));
+			return PriorityMapTool::_GetEndIterator(*(const_cast<priority_map_type *>(&priority_map)));
 		}
 
 		inline static ListIterator _GetListBeginIterator(const list_type &l)
 		{
-			return ListTool::_GetBeginIterator(const_cast<list_type&>(l));
-			//return ListTool::_GetBeginIterator(*(const_cast<list_pointer>(&l)));
+			//return ListTool::_GetBeginIterator(const_cast<list_type&>(l));
+			return ListTool::_GetBeginIterator(*(const_cast<list_type *>(&l)));
 		}
 
 		inline static ListIterator _GetListEndIterator(const list_type &l)
 		{
-			return ListTool::_GetEndIterator(const_cast<list_type&>(l));
-			//return ListTool::_GetEndIterator(*(const_cast<list_pointer>(&l)));
+			//return ListTool::_GetEndIterator(const_cast<list_type&>(l));
+			return ListTool::_GetEndIterator(*(const_cast<list_type *>(&l)));
 		}
 
 	};
 
-	typedef IteratorImplBase<
+	typedef IteratorImpl< 
 		typename container_type::priority_map_iterator,
 		typename container_type::list_iterator,
 		typename IteratorTool<priority_map_type>,
 		typename IteratorTool<list_type>
-	> IteratorImpl;
+	> IteratorImplEx;
 
-	typedef IteratorImplBase<
+	typedef IteratorImpl< 
 		typename container_type::priority_map_reverse_iterator,
 		typename container_type::list_reverse_iterator,
 		typename ReverseIteratorTool<priority_map_type>,
 		typename ReverseIteratorTool<list_type>
-	> ReverseIteratorImpl;
+	> ReverseIteratorImplEx;
 
 #else
 	//方案二：
@@ -1120,11 +1154,19 @@ public:
 	};
 
 	//Consistency with the standard library 与标准库保持一致性
+#ifdef __USE_PLAN_ONE
+	typedef typename Iterator<IteratorImplEx> iterator;
+	typedef typename ConstIterator<IteratorImplEx> const_iterator;
+
+	typedef typename Iterator<ReverseIteratorImplEx> reverse_iterator;
+	typedef typename ConstIterator<ReverseIteratorImplEx> const_reverse_iterator;
+#else
 	typedef typename Iterator<IteratorImpl> iterator;
 	typedef typename ConstIterator<IteratorImpl> const_iterator;
 
 	typedef typename Iterator<ReverseIteratorImpl> reverse_iterator;
 	typedef typename ConstIterator<ReverseIteratorImpl> const_reverse_iterator;
+#endif
 
 	typedef typename list_value_reference reference;
 	typedef typename const_list_value_reference const_reference;
@@ -1729,7 +1771,7 @@ private:
 	obtain_key_func   obtain_key_;
 	priority_map_type priority_map_;  //std::map< priority_type, list_type, priority_compare>
 	hash_map_type     hash_map_;
-};
+	};
 
 
 #endif //!HORSE_PRIORITY_LINKED_HASH_MAP
