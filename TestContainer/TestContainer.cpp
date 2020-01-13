@@ -7,6 +7,7 @@
 
 int main()
 {
+    priority_linked_hash_map_test::test_case::test_all();
     return 0;
 }
 
