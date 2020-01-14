@@ -28,6 +28,7 @@
 *
 *	struct ObtainKeyOfStudent
 *	{
+*       //注意:需要"按引用"返回，避免拷贝的开销[如果key的拷贝开销比较大，可以有效避免这一点]
 *		inline const int& operator()(const Student&l)const
 *		{
 *			return l.id();
@@ -36,6 +37,7 @@
 *
 *	struct ObtainKeyOfStudentPtr
 *	{
+*       //注意:需要"按引用"返回[如果key的拷贝开销比较大，可以有效避免这一点]
 *		inline const int& operator()(const Student_sptr& sp)const
 *		{
 *			assert(sp);
@@ -355,7 +357,6 @@ private:
 			return itr;
 		}
 
-	private:
 		inline const priority_map_pointer _GetMapPtr()const
 		{
 			return PriorityMapTool::_GetContainerPointer(priorityMapItr_);
@@ -365,7 +366,7 @@ private:
 		{
 			return ListTool::_GetContainerPointer(listItr_);
 		}
-
+	private:
 		inline static PriorityMapIterator _GetPriorityMapBeginIterator(const priority_map_type &priority_map)
 		{
 			return PriorityMapTool::_GetBeginIterator(const_cast<priority_map_type&>(priority_map));
@@ -413,8 +414,10 @@ public:
 		friend class priority_linked_hash_map;
 	public:
 		IteratorImplType impl_;
-	public:
-		const list_iterator& listItr()const { return impl_.listItr_; }
+	private:
+		inline const list_iterator& listItr()const { return impl_.listItr_; }
+		inline list_pointer _GetListPtr()const { return impl_._GetListPtr(); }
+		inline priority_map_pointer _GetMapPtr()const { return impl_._GetMapPtr(); }
 	public:
 		Iterator() {}
 		Iterator(const Iterator &right)
@@ -464,12 +467,12 @@ public:
 			return tempItr;
 		}
 
-		friend bool operator==(const Iterator &left, const Iterator &right)
+		friend inline bool operator==(const Iterator &left, const Iterator &right)
 		{
 			return left.impl_ == right.impl_;
 		}
 
-		friend bool operator!=(const Iterator &left, const Iterator &right)
+		friend inline bool operator!=(const Iterator &left, const Iterator &right)
 		{
 			return left.impl_ != right.impl_;
 		}
@@ -496,8 +499,10 @@ public:
 		friend class priority_linked_hash_map;
 	public:
 		IteratorImplType impl_;
-	public:
-		const list_iterator& listItr()const { return impl_.listItr_; }
+	private:
+		inline const list_iterator& listItr()const { return impl_.listItr_; }
+		inline list_pointer _GetListPtr()const { return impl_._GetListPtr(); }
+		inline priority_map_pointer _GetMapPtr()const { return impl_._GetMapPtr(); }
 	public:
 		ConstIterator() {}
 		ConstIterator(const ConstIterator &right)
@@ -558,32 +563,32 @@ public:
 			return tempItr;
 		}
 
-		friend bool operator==(const ConstIterator &left, const ConstIterator &right)
+		friend inline bool operator==(const ConstIterator &left, const ConstIterator &right)
 		{
 			return left.impl_ == right.impl_;
 		}
 
-		friend bool operator==(const Iterator<IteratorImplType> &left, const ConstIterator &right)
+		friend inline bool operator==(const Iterator<IteratorImplType> &left, const ConstIterator &right)
 		{
 			return left.impl_ == right.impl_;
 		}
 
-		friend bool operator==(const ConstIterator &left, const Iterator<IteratorImplType> &right)
+		friend inline bool operator==(const ConstIterator &left, const Iterator<IteratorImplType> &right)
 		{
 			return left.impl_ == right.impl_;
 		}
 
-		friend bool operator!=(const ConstIterator &left, const ConstIterator &right)
+		friend inline bool operator!=(const ConstIterator &left, const ConstIterator &right)
 		{
 			return left.impl_ != right.impl_;
 		}
 
-		friend bool operator!=(const Iterator<IteratorImplType> &left, const ConstIterator &right)
+		friend inline bool operator!=(const Iterator<IteratorImplType> &left, const ConstIterator &right)
 		{
 			return left.impl_ != right.impl_;
 		}
 
-		friend bool operator!=(const ConstIterator &left, const Iterator<IteratorImplType> &right)
+		friend inline bool operator!=(const ConstIterator &left, const Iterator<IteratorImplType> &right)
 		{
 			return left.impl_ != right.impl_;
 		}
@@ -682,26 +687,44 @@ private:
 
 				//方案二：删除原来的，然后再push [这种更符合 "按照添加的顺序"的语义]
 				list_iterator oldListItr = hashMapItr->second;
-				list_pointer pList = _GetListPtr(oldListItr);
-				assert(pList && oldListItr != pList->end());
+				list_pointer pOldList = _GetListPtr(oldListItr);
+				assert(pOldList && oldListItr != pOldList->end());
 
 				//1.删除旧元素
-				pList->erase(oldListItr);
-				//2.插入新元素
+				pOldList->erase(oldListItr);
+				//2.插入新元素				
+				priority_map_iterator priorityMapItr = priority_map_.find(priority); //查找priority
+				list_pointer pNewList = nullptr;
+				if (priorityMapItr != priority_map_.end())
+				{
+					pNewList = &(priorityMapItr->second);
+				}
+				else
+				{
+					std::pair<priority_map_iterator, bool> rtn = priority_map_.insert(priority_map_value_type(priority, list_type()));
+					assert(rtn.second);
+					pNewList = &(rtn.first->second);
+				}
+				assert(pNewList);
 				list_iterator newListItr;
 				if (bPushback)
-					newListItr = pList->insert(pList->end(), val);
+					newListItr = pNewList->insert(pNewList->end(), val);
 				else
-					newListItr = pList->insert(pList->begin(), val);
+					newListItr = pNewList->insert(pNewList->begin(), val);
 
-				hashMapItr->second = newListItr;            //保存新的迭代器
-
+				hashMapItr->second = newListItr;            //保存新的迭代器			
+#ifdef _DEBUG
 				std::cout << "_Push [key:" << k << "] is existed, be covered!!!" << std::endl;
+				_CheckCount();
+#endif
 				return newListItr;
 			}
 			else
 			{
+#ifdef _DEBUG
+				_CheckCount();
 				std::cout << "_Push [key:" << k << "] is existed, do nothing!!!" << std::endl;
+#endif
 				return hashMapItr->second;
 			}
 		}
@@ -910,7 +933,7 @@ public:
 		const_iterator rtnItr = itr; //copy
 		++rtnItr;
 
-		list_pointer pList = _GetListPtr(itr.listItr());
+		list_pointer pList = itr._GetListPtr();
 		assert(pList && itr.listItr() != pList->end());
 		//1.
 		const key_type &k = obtain_key_(*(itr.listItr()));
