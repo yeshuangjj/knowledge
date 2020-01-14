@@ -33,6 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomContainer", "CustomCo
 		src\CustomContainer\priority_linked_hash_map.h = src\CustomContainer\priority_linked_hash_map.h
 		src\CustomContainer\priority_linked_hash_map____old.h = src\CustomContainer\priority_linked_hash_map____old.h
 		src\CustomContainer\simple_priority_linked_hash_map.h = src\CustomContainer\simple_priority_linked_hash_map.h
+		src\CustomContainer\说明.txt = src\CustomContainer\说明.txt
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2D9C9FF8-6EBC-43F4-A7F4-3BA10D114758}"

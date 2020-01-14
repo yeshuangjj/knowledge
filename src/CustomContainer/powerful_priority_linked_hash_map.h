@@ -177,7 +177,7 @@ private:
 			assert(priorityMapItr_._Getcont() != nullptr);
 			assert(listItr_._Getcont() != nullptr);
 			assert(!endFlag_); //if assert false, iterator is out of range,please check your logic
-			return (*listItr_);
+			return (*listItr_); 
 		}
 
 		list_value_pointer operator->() const
