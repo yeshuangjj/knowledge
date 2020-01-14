@@ -62,8 +62,22 @@ int main()
     {
         list_type l;
         l.push_back(1);
-        //list_type::iterator itr;
-        //itr != l.begin();
+        l.push_back(2);
+        auto itr = l.begin();
+        auto itr_copy = itr;
+        {
+            auto p1 = itr_copy._Getcont();
+            auto p2 = itr_copy._Getpnext();
+            
+        }
+
+        l.erase(itr);
+
+        {
+            auto p1 = itr_copy._Getcont();
+            auto p2 = itr_copy._Getpnext();
+        }
+
 
         l.begin()._Getcont();
     }

@@ -272,6 +272,7 @@ private:
 		void _Decrement()
 		{
 			assert(pContainer_ != nullptr && pContainer_->empty() == false); // 检查，确保pContainer_非空
+			assert(_GetMapPtr() != nullptr && _GetMapPtr()->empty() == false);
 
 			list_pointer pList = _GetListPtr();
 			if (priorityMapItr_ == _GetPriorityMapEndIterator(pContainer_->priority_map_))
